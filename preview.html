@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hidol Feature Stories Preview</title>
+<style>
+  :root {
+    --brand: #E8395A;
+    --brand-light: #fff0f3;
+    --text: #1a1a1a;
+    --text-muted: #6b7280;
+    --text-light: #9ca3af;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --divider: #e5e7eb;
+    --insight-bg: #f8f4ff;
+    --insight-border: #8b5cf6;
+    --quote-border: #E8395A;
+    --radius: 12px;
+    --font-sans: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    --font-serif: 'Noto Serif TC', 'Georgia', serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  /* ── NAV ── */
+  .nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--divider);
+    padding: 0 24px;
+    height: 56px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .nav-logo {
+    font-size: 20px; font-weight: 800; color: var(--brand);
+    letter-spacing: -0.5px;
+  }
+  .nav-badge {
+    font-size: 11px; color: var(--text-muted);
+    background: var(--divider); padding: 2px 8px; border-radius: 20px;
+  }
+  .nav-back {
+    margin-left: auto;
+    font-size: 13px; color: var(--text-muted); cursor: pointer;
+    padding: 6px 14px; border-radius: 20px;
+    border: 1px solid var(--divider); background: none;
+    transition: all .15s;
+  }
+  .nav-back:hover { background: var(--divider); color: var(--text); }
+
+  /* ── INDEX PAGE ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .index-hero {
+    background: linear-gradient(135deg, #1a0a12 0%, #2d1020 50%, #1a0a20 100%);
+    color: white;
+    padding: 64px 24px 80px;
+    text-align: center;
+  }
+  .index-hero h1 {
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+  }
+  .index-hero p {
+    font-size: 15px; color: rgba(255,255,255,0.6);
+    max-width: 500px; margin: 0 auto;
+  }
+  .index-hero .run-badge {
+    display: inline-block;
+    background: rgba(232,57,90,0.2);
+    border: 1px solid rgba(232,57,90,0.4);
+    color: #ff8fa3; font-size: 11px;
+    padding: 4px 12px; border-radius: 20px;
+    margin-bottom: 20px; letter-spacing: 0.5px;
+  }
+
+  .stories-grid {
+    max-width: 900px; margin: 0 auto;
+    padding: 48px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 28px;
+  }
+
+  .story-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+    border: 1px solid var(--divider);
+  }
+  .story-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  }
+  .story-card-cover {
+    height: 200px; overflow: hidden;
+    background: linear-gradient(135deg, #2d1020, #1a0a20);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .story-card-cover img {
+    width: 100%; height: 100%; object-fit: cover;
+    opacity: 0.85;
+  }
+  .story-card-cover .cover-placeholder {
+    font-size: 48px; opacity: 0.3;
+  }
+  .story-card-body { padding: 20px; }
+  .story-card-tags {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;
+  }
+  .tag {
+    font-size: 11px; color: var(--brand);
+    background: var(--brand-light); padding: 2px 8px;
+    border-radius: 20px; font-weight: 500;
+  }
+  .story-card h2 {
+    font-size: 18px; font-weight: 800;
+    line-height: 1.4; margin-bottom: 8px;
+    color: var(--text);
+  }
+  .story-card p {
+    font-size: 13px; color: var(--text-muted);
+    line-height: 1.6;
+    display: -webkit-box; -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .story-card-meta {
+    display: flex; gap: 16px; margin-top: 14px;
+    font-size: 12px; color: var(--text-light);
+    padding-top: 14px; border-top: 1px solid var(--divider);
+  }
+  .story-card-meta span { display: flex; align-items: center; gap: 4px; }
+
+  /* ── STORY PAGE ── */
+  .story-page { max-width: 720px; margin: 0 auto; padding: 0 24px 80px; }
+
+  .story-cover {
+    height: 420px;
+    background: linear-gradient(135deg, #1a0a12, #2d1020);
+    margin: 0 -24px;
+    position: relative; overflow: hidden;
+    display: flex; align-items: flex-end;
+  }
+  .story-cover img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%; object-fit: cover;
+    opacity: 0.5;
+  }
+  .story-cover-content {
+    position: relative; z-index: 1;
+    padding: 40px 40px;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+    width: 100%;
+  }
+  .story-cover-tags { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .story-cover-tags .tag {
+    background: rgba(232,57,90,0.25);
+    color: #ffb3c1; border: 1px solid rgba(232,57,90,0.3);
+  }
+  .story-cover-content h1 {
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 900; color: white;
+    line-height: 1.3; margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
+  .story-cover-content .subtitle {
+    font-size: 14px; color: rgba(255,255,255,0.7); line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .story-cover-meta {
+    display: flex; gap: 16px;
+    font-size: 12px; color: rgba(255,255,255,0.5);
+  }
+
+  .story-body { padding-top: 40px; }
+
+  /* Sections */
+  .section-text {
+    margin-bottom: 32px;
+  }
+  .section-text h2 {
+    font-size: 20px; font-weight: 800;
+    margin-bottom: 14px; line-height: 1.4;
+    color: var(--text);
+  }
+  .section-text p {
+    font-size: 16px; line-height: 1.85;
+    color: #374151; margin-bottom: 14px;
+  }
+
+  .section-divider {
+    margin: 40px 0;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-divider::before, .section-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--divider);
+  }
+  .section-divider::after { content: ''; }
+  .divider-icon { color: var(--brand); font-size: 16px; opacity: 0.5; }
+
+  .section-moment {
+    background: var(--card-bg);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .section-moment-header {
+    padding: 18px 20px 0;
+  }
+  .section-moment-header h2 {
+    font-size: 17px; font-weight: 800; margin-bottom: 12px;
+    color: var(--text);
+  }
+  .section-moment-body {
+    padding: 0 20px 20px;
+    font-size: 15px; line-height: 1.8; color: #374151;
+  }
+  .section-moment-body p { margin-bottom: 12px; }
+  .section-moment-body blockquote {
+    border-left: 3px solid var(--quote-border);
+    margin: 16px 0; padding: 10px 16px;
+    background: var(--brand-light);
+    border-radius: 0 8px 8px 0;
+    font-style: italic; color: #4b5563;
+    font-size: 15px; line-height: 1.75;
+  }
+
+  .media-container { overflow: hidden; }
+  .media-inline {
+    width: 100%; max-height: 420px;
+    object-fit: cover; display: block;
+  }
+  .media-placeholder {
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+    height: 240px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px; color: var(--text-muted);
+    font-size: 13px;
+  }
+  .media-placeholder .icon { font-size: 36px; opacity: 0.4; }
+  .media-caption {
+    padding: 10px 20px;
+    font-size: 12px; color: var(--text-muted);
+    border-top: 1px solid var(--divider);
+    background: #fafafa;
+  }
+  .media-credit {
+    font-size: 11px; color: var(--text-light);
+    margin-top: 2px;
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2px;
+  }
+  .gallery-item { position: relative; aspect-ratio: 3/4; overflow: hidden; }
+  .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+  .gallery-item .media-placeholder { height: 100%; }
+  .gallery-item-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%);
+    display: flex; align-items: flex-end; padding: 10px;
+    opacity: 0; transition: opacity .2s;
+  }
+  .gallery-item:hover .gallery-item-overlay { opacity: 1; }
+  .gallery-item-overlay span { font-size: 11px; color: white; line-height: 1.4; }
+
+  .section-insight {
+    background: var(--insight-bg);
+    border-left: 4px solid var(--insight-border);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 24px 24px;
+    margin-bottom: 32px;
+  }
+  .section-insight .insight-label {
+    font-size: 11px; font-weight: 700;
+    color: var(--insight-border); letter-spacing: 1px;
+    margin-bottom: 10px; text-transform: uppercase;
+  }
+  .section-insight h2 {
+    font-size: 17px; font-weight: 800;
+    color: var(--text); margin-bottom: 12px; line-height: 1.4;
+  }
+  .section-insight p {
+    font-size: 14px; color: #4b5563; line-height: 1.8;
+    margin-bottom: 10px;
+  }
+
+  .story-footer {
+    margin-top: 60px; padding-top: 40px;
+    border-top: 2px solid var(--divider);
+  }
+  .story-footer h3 {
+    font-size: 13px; color: var(--text-muted); letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+  .contributor-list { display: flex; flex-direction: column; gap: 8px; }
+  .contributor-item {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px;
+  }
+  .contributor-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand), #ff6b8a);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: white; font-weight: 700; flex-shrink: 0;
+  }
+  .contributor-name { color: var(--text); font-weight: 600; }
+  .contributor-count { color: var(--text-muted); }
+
+  .related-stories { margin-top: 40px; }
+  .related-stories h3 {
+    font-size: 13px; color: var(--text-muted); letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+  .related-card {
+    display: flex; gap: 14px; align-items: center;
+    padding: 14px; border-radius: var(--radius);
+    border: 1px solid var(--divider); background: var(--card-bg);
+    cursor: pointer; transition: all .15s;
+  }
+  .related-card:hover { background: var(--brand-light); border-color: var(--brand); }
+  .related-card-cover {
+    width: 64px; height: 64px; border-radius: 8px;
+    background: linear-gradient(135deg, #2d1020, #1a0a20);
+    flex-shrink: 0; overflow: hidden;
+  }
+  .related-card-cover img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+  .related-card-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .related-card-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  @media (max-width: 640px) {
+    .stories-grid { grid-template-columns: 1fr; padding: 24px 16px; }
+    .story-page { padding: 0 16px 60px; }
+    .story-cover { height: 320px; }
+    .story-cover-content { padding: 24px 20px; }
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">hidol</div>
+  <div class="nav-badge">Feature Stories Preview</div>
+  <button class="nav-back" id="navBack" onclick="showIndex()" style="display:none">← 回列表</button>
+</nav>
+
+<!-- INDEX PAGE -->
+<div class="page active" id="pageIndex">
+  <div class="index-hero">
+    <div class="run-badge">📦 run-1771989662263 · 生產資料測試</div>
+    <h1>FEniX 粉絲故事</h1>
+    <p>由 hidol-agents pipeline 從 50 個真實 Moment 自動生成的 Feature Stories</p>
+  </div>
+  <div class="stories-grid" id="storiesGrid"></div>
+</div>
+
+<!-- STORY PAGES -->
+<div class="page" id="pageStory">
+  <div id="storyContent"></div>
+</div>
+
+<script>
+// ── STORY DATA ──────────────────────────────────────────────────────────────
+
+const STORY_1 = {"meta":{"title":"茫茫人海中，被你看見的那一刻","description":"當螢幕上跳出『恭喜中籤』的瞬間，心臟被狠狠撞了一下。你知道那種感覺嗎？就像買樂透中了頭獎，但更真實——因為獎品不是錢，是『被看見』。","og_image":"/hidol/fanclub/ACD6E73F-BDF6-4FF6-BD98-BCDFE7AC49FF-A358C803-6504-4D84-8204-AAE294C128A3.jpeg","keywords":["FEniX","粉絲互動","見面會","一日店長","漫博會","追星日常"],"author":"hidol","published_at":"2026-02-25T03:34:00.425Z","reading_time_minutes":6},"header":{"title":"茫茫人海中，被你看見的那一刻","subtitle":"從漫博上台到一日店長，FEniX 粉絲們記錄下那些中籤率 1-3% 的幸運瞬間","cover":{"url":"/hidol/fanclub/ACD6E73F-BDF6-4FF6-BD98-BCDFE7AC49FF-A358C803-6504-4D84-8204-AAE294C128A3.jpeg","alt":"準備上台就發現五個人這樣等著，其實也會緊張餒XDDD","caption":"『準備上台就發現五個人這樣等著，其實也會緊張餒XDDD』——漫博抽中上台的那一刻","credit":{"user_display_name":"粉絲_061184","user_id":"2209694949732061184"}}},"sections":[{"section_id":"intro-0","type":"text","content":"當螢幕上跳出『恭喜中籤』的瞬間，心臟被狠狠撞了一下。\n\n你知道那種感覺嗎？就像買樂透中了頭獎，但更真實——因為獎品不是錢，是『被看見』。在幾百、幾千個報名的人裡，你被抽到了。你可以上台。你可以站在他們面前。\n\n這篇文章記錄的，就是那些幸運瞬間。"},{"section_id":"divider-1","type":"divider"},{"section_id":"moment-highlight-2","type":"moment_highlight","heading":"漫博：帶著熊熊上台的那天","content":"粉絲_061184 記得那天很清楚。\n\n>『準備上台就發現五個人這樣等著（？）其實也會緊張餒XDDD很幸運可以上台還帶了熊熊跟家齊合照🧸是非常非常幸福的一天！我愛漫博🥰』\n\n你有沒有發現，她用了三個『非常』。不是兩個，是三個。那種興奮，連句號都擋不住。\n\n而且她帶了熊熊。就是那種『如果真的抽到，我要帶什麼上去』的精心準備。結果她真的抽到了。站在五個人面前，緊張到不行，但那張合照——可以回味一輩子的那種。","media":[{"id":"d5ihjtv71cps73c075v0","media_index":0,"type":"image","url":"/hidol/fanclub/ACD6E73F-BDF6-4FF6-BD98-BCDFE7AC49FF-A358C803-6504-4D84-8204-AAE294C128A3.jpeg","width":590,"height":982,"caption":"帶著熊熊和家齊合照，是非常非常幸福的一天","alt_text":"準備上台就發現五個人這樣等著","credit":{"user_display_name":"粉絲_061184","user_id":"2209694949732061184"},"placement":"inline"}]},{"section_id":"divider-3","type":"divider"},{"section_id":"trend-insight-4","type":"trend_insight","heading":"1-3% 的幸運學","content":"你有沒有想過，為什麼有人願意報名一個中籤率只有 1-3% 的活動？\n\n有報導算過，2024 漫博會期間的偶像互動活動，中籤率大概就是這個數字。幾百個人搶幾個名額。但粉絲們還是報。還是等。還是在開獎那刻盯著螢幕，心跳快到不行。\n\n說個有趣的觀察：這種小型、高互動性的活動，反而比大型演唱會更能黏住粉絲。因為你不是去『看』偶像。你是去『跟』偶像互動。那種感覺不一樣。\n\n不是流水線上的三十秒問候。是真的對話。是他看著你的眼睛。是他記得你的名字。是那種『我被看見了』的感受。"},{"section_id":"divider-5","type":"divider"},{"section_id":"moment-highlight-6","type":"moment_highlight","heading":"一日店長：角頭扮演的荒謬與真實","content":"粉絲_879360 抽到了 miramira 一日店長的合照資格。她一上台，就請 FEniX 陪她演角頭。\n\n>『一上去就請鳳凰陪我扮演角頭，大家都很乖的配合了（但親友團拍側拍說我看起來比較像是被他們欺負的那個😍？？）』\n\n這種即興的互動，才是一日店長活動最迷人的地方。不是制式化的握手、簽名、說再見。而是你可以提要求、可以玩梗、可以看到他們『接住你的球』然後回傳一個更好笑的。\n\n結果親友團說她看起來像被欺負的那個。這種反差，大概只有在場的人才懂那個笑點。但就是這些『只有我們知道』的細節，讓追星變得更像是共同創作回憶。","media":[{"id":"d5i7sqmg92cs73deeseg","media_index":0,"type":"image","url":"/hidol/fanclub/7D695F4E-35B8-4928-BCB3-A0376BB8521B-C35FB737-4380-4D81-A589-329253B6211C.jpeg","width":901,"height":1321,"caption":"一起演角頭的那天（雖然看起來更像被欺負）","alt_text":"一起演角頭","credit":{"user_display_name":"粉絲_879360","user_id":"2208757444404879360"},"placement":"inline"}]},{"section_id":"divider-7","type":"divider"},{"section_id":"moment-highlight-8","type":"moment_highlight","heading":"『冷不冷？』——等了一天的關心","content":"粉絲_887808 的故事更簡單，但可能更打中人。\n\n>『等了一天一上台就被關心冷不冷 真的被浦洋暖到 太貼心了🥹』\n\n等了一天。不是等了一小時。是一整天。然後上台第一句話是『冷不冷』。\n\n這就是為什麼粉絲們說『被看見』這麼重要。不是多華麗的互動，不是多驚喜的對話。就是那個當下，他看到你了。他關心你了。他把你當成一個具體的人，而不是『第 87 號粉絲』。\n\n那天可能真的很冷。但被這樣問候的瞬間，大概什麼冷都忘了。","media":[{"id":"d5ih365fna2c73dcfmr0","media_index":0,"type":"image","url":"/hidol/fanclub/418C4E30-C85D-42DE-AA14-CAD0925E4DA3-AA541426-2E39-4CDF-AE73-C862B5A02C3E.jpeg","width":827,"height":1110,"caption":"最暖心的夏里長：等了一天，換來一句『冷不冷』","alt_text":"等了一天一上台就被關心冷不冷","credit":{"user_display_name":"粉絲_887808","user_id":"2706137333584887808"},"placement":"inline"}]},{"section_id":"divider-9","type":"divider"},{"section_id":"moment-gallery-10","type":"moment_gallery","heading":"茫茫人海中被發現","content":"還有更多幸運瞬間，散落在不同的時間、地點、活動中——\n\n聖誕夜在兒童新樂園，粉絲_516160 被峻廷在人群中發現了。她說『好謝謝峻廷在茫茫人群中發現了我🥹』。就是這樣。茫茫人海，他看到你了。\n\nRolarola 一日店長，粉絲_879360 買到了拍立得資格、擊掌和歡送。還拿到了提前的聖誕節糖果。她說『合照裡假裝奧嘟嘟的隆超可愛』。\n\n每個幸運瞬間，都有它的溫度和細節。那些笑容、對話、眼神交流——都是只有你知道的故事。","media":[{"id":"d5iaslv71cps73d9m8ng","media_index":0,"type":"video","url":"/hidol/fanclub/05901CEB-DC8E-476B-B48D-5443CB5D8CD5-CDEBB4BD-D60F-4057-8EB6-A648B7077A26.mp4","thumbnail_url":"/hidol/fanclub/A064389E-85D7-4007-8FE1-BE3B436BF860-4EDF2D1E-96A2-4811-872F-F60321E5126C.jpeg","width":1080,"height":1920,"duration_seconds":15,"caption":"第二年沒想到過了二次聖誕，謝謝峻廷在茫茫人群中發現了我","alt_text":"聖誕節兒童新樂園","credit":{"user_display_name":"粉絲_516160","user_id":"2204387928455516160"},"placement":"side-by-side"},{"id":"d5hob5me1bts73er1tr0","media_index":0,"type":"video","url":"/hidol/fanclub/CEF15CAA-4213-4133-AED9-15BFA3B26D20-EA61994A-D2AE-4746-9E13-8EC0EBD165DE.mp4","thumbnail_url":"/hidol/fanclub/F06248ED-54BD-4551-B86A-5387B6996ACB-E53FF852-06DE-4748-A00C-34FB433D1076.jpeg","width":1080,"height":1920,"duration_seconds":6,"caption":"24 vs 27 歲峻廷：拿出剛出道時的應援扇子跟看板合照","alt_text":"24vs27歲峻廷","credit":{"user_display_name":"粉絲_516160","user_id":"2204387928455516160"},"placement":"side-by-side"}]},{"section_id":"divider-11","type":"divider"},{"section_id":"analysis-12","type":"text","heading":"為什麼我們需要『被選中』","content":"也許你會覺得，為什麼要這麼在意『被抽到』這件事？\n\n但如果你想想看，追星這件事本質上是什麼——是你單方面地喜歡一個人。你聽他的歌、看他的影片、買他的專輯、參加他的活動。你付出很多。但大部分時候，這是單向的。\n\n所以當你『被選中』，當你站在他面前，當他看著你、跟你說話、記得你——那個瞬間，這段關係變成雙向的了。就算只有短短幾分鐘。就算中籤率只有 1-3%。就算你知道下次可能輪不到你。\n\n但那一刻，你被看見了。\n\n而這些被記錄下來的 Moment——照片、影片、文字——就是證明。證明那不是夢。證明你真的站在那裡。證明那些情緒和溫度，都是真實發生過的。"},{"section_id":"divider-13","type":"divider"},{"section_id":"conclusion-14","type":"moment_highlight","content":"粉絲_061184 在另一則 Moment 裡寫：\n\n>『和最喜歡的你們的合照喔！！！！希望今年也可以抽到拜託拜託宇宙保佑我也想跟鳳凰合照！！』\n\n那些驚嘆號，那些許願，那些『希望今年也可以』——這就是追星的樣子。每一次抽籤都是新的期待。每一次中籤都是新的幸運。\n\n而那些幸運瞬間，會一直被記得。\n\n會一直被珍藏。\n\n就像他們會一直被喜歡一樣。","media":[{"id":"d5ihkrue1bts73di6m3g","media_index":0,"type":"image","url":"/hidol/fanclub/D1BB0CF4-7DFE-417B-A9FC-522F3C50D437-DBD7156C-0304-4387-B01C-05A682F93E24.jpeg","width":1740,"height":979,"caption":"和最喜歡的你們的合照，希望今年也可以抽到","alt_text":"和最喜歡的你們的合照","credit":{"user_display_name":"粉絲_061184","user_id":"2209694949732061184"},"placement":"inline"}]},{"section_id":"divider-15","type":"divider"}],"footer":{"moment_credits":[{"user_display_name":"粉絲_061184","user_id":"2209694949732061184","moment_count":4,"moments":["d5ihkrue1bts73di6m3g","d5ihkeee1bts73di5mpg","d5ihjtv71cps73c075v0","d5ihh1771cps73c06gh0"]},{"user_display_name":"粉絲_516160","user_id":"2204387928455516160","moment_count":4,"moments":["d5iaslv71cps73d9m8ng","d5hob5me1bts73er1tr0","d5h4eeu7ekns7381l6m0","d5gsrmsd1b3c73f3eo70"]},{"user_display_name":"粉絲_879360","user_id":"2208757444404879360","moment_count":2,"moments":["d5i7sqmg92cs73deeseg","d5i7k6me1bts73b2qq9g"]},{"user_display_name":"粉絲_887808","user_id":"2706137333584887808","moment_count":1,"moments":["d5ih365fna2c73dcfmr0"]}],"tags":["FEniX","粉絲互動","見面會","一日店長","漫博會","追星日常"]}};
+
+const STORY_2 = {"meta":{"title":"鏡頭外的鳳凰：那些藏不住的真實瞬間","description":"你有沒有想過，為什麼粉絲這麼喜歡看幕後花絮？不是因為舞台不夠精彩。而是因為當燈光暗下來、音樂停了、鏡頭轉到後台時，你會看到另一種真實。","og_image":"/hidol/fanclub/49210536-A24F-4A98-ABF6-A9816581D17D-2F310E69-247B-42DC-9C36-D1A267D8CC5B.jpeg","keywords":["FEniX","成員互動","幕後花絮","真實個性","粉絲觀察"],"canonical_url":"#/story/mirror-outside-phoenix"},"header":{"title":"鏡頭外的鳳凰：那些藏不住的真實瞬間","subtitle":"從浦洋看隆唱歌的眼神，到 MAX 的起床氣，捕捉 FEniX 成員在舞台下最真實的樣子","cover":{"url":"/hidol/fanclub/49210536-A24F-4A98-ABF6-A9816581D17D-2F310E69-247B-42DC-9C36-D1A267D8CC5B.jpeg","caption":"浦洋看著隆唱歌，眼裡滿滿的愛","credit":"粉絲_492224"},"published_at":"2026-02-25T03:45:42.719Z","estimated_read_time_minutes":5},"sections":[{"section_id":"intro-0","type":"text","content":"你有沒有想過，為什麼粉絲這麼喜歡看幕後花絮？\n\n不是因為舞台不夠精彩。而是因為當燈光暗下來、音樂停了、鏡頭轉到後台時，你會看到另一種真實。\n\n浦洋看著隆唱歌時，眼裡那種藏不住的欣賞。上台前更想給貓貓拍背而不是隊友。MAX 榮登起床氣寶座。峻廷認真檢查照片的專注側臉。家齊看 MAX 表演時，臉上那種「我隊友超帥」的開心表情。\n\n這些鏡頭外的瞬間，比任何官方宣傳照都更讓人覺得——「對，這才是他們。」"},{"section_id":"divider-1","type":"divider"},{"section_id":"moment-highlight-2","type":"moment_highlight","heading":"眼神會說話","content":"有些時刻，不需要台詞。\n\n一位粉絲記錄下浦洋看隆唱歌的畫面，配上一句簡單的感想：\n\n> 「浦洋真的很喜歡隆唱歌的樣子，眼裡滿滿的愛😍」\n\n就是這樣。沒有華麗的修飾，但你看得出來那種欣賞是真的。不是為了鏡頭擺出來的表情，而是當音樂響起、隊友開口唱歌時，自然流露出的那種「哇，他好厲害」的眼神。\n\n這種瞬間很難演。你可以假裝微笑、假裝專注，但眼神騙不了人。粉絲說「眼裡滿滿的愛」，不是在嗑 CP，而是真的看到了那種毫無保留的欣賞。","media":[{"moment_id":"d5ch4au2v60s73b9q0fg","type":"video","url":"/hidol/fanclub/46D565AC-97B1-4B2E-8227-E98BCEB7FF29-A4E88B6F-1E6C-4C64-8E39-DD6CB3800CB9.mp4","thumbnail_url":"/hidol/fanclub/A7C5E295-47A5-47D0-AFEB-39EB65D7A0BB-3C2DBB3C-4457-4071-B963-1D035207FD79.jpeg","caption":"浦洋看隆唱歌的眼神","credit":"粉絲_492224","placement":"inline","width":590,"height":1044,"duration_seconds":10}]},{"section_id":"divider-3","type":"divider"},{"section_id":"trend-insight-4","type":"trend_insight","heading":"為什麼大家更愛看幕後？","content":"這不是你一個人的感覺。原來大家都這樣。\n\n翻翻社群你就知道，粉絲現在更愛看幕後花絮。彩排過程、休息室互動、工作空檔的閒聊——這些「非正式內容」的觀看數和分享率，比正式的 MV 或宣傳照高出一大截。\n\n為什麼？因為大家看膩了「完美偶像」的人設。\n\n你可以很帥、很專業，但我也想看到你起床氣發作的樣子。想看到你摸貓時放鬆的表情。想看到你看隊友表演時，眼裡那種藏不住的欣賞。\n\n這些時刻讓偶像變得更像一個「真實的人」。不是想把你拉下神壇，而是想知道——燈光熄滅後，你是什麼樣子。"},{"section_id":"divider-5","type":"divider"},{"section_id":"moment-highlight-6","type":"moment_highlight","heading":"上台前的儀式感","content":"每個人都有自己的備戰方式。\n\n有人上台前要深呼吸、有人要聽音樂進入狀態、有人要跟隊友擊掌打氣。浦洋呢？他選擇給貓貓拍背。\n\n> 「上台前要拍背，但更喜歡給貓貓拍背🙂‍↕️」\n\n這個畫面太可愛了。不是說隊友不重要，而是比起「我們一起加油！」的熱血時刻，浦洋更需要摸個貓、給牠拍拍背，讓自己放鬆下來。\n\n你說這是不是很真實？沒有刻意營造的團隊感，就是一個人在上台前想找點撫慰。而那個撫慰來源，剛好是一隻貓。","media":[{"moment_id":"d5chgvsd1b3c7390sgog","type":"video","url":"/hidol/fanclub/F5B9168F-8DF6-43E0-B52D-C35D21DA3FE4-499127B8-E256-4F4B-8C16-323BAED971EB.mp4","thumbnail_url":"/hidol/fanclub/9CCB5DA8-0302-4B05-AAFE-27BA365C31FD-81713487-8A26-41DE-88A6-5216C47A2489.jpeg","caption":"浦洋上台前給貓貓拍背","credit":"粉絲_492224","placement":"inline","width":590,"height":1019,"duration_seconds":3}]},{"section_id":"divider-7","type":"divider"},{"section_id":"moment-gallery-8","type":"moment_gallery","heading":"那些被捕捉的日常","content":"除了那些「名場面」，還有更多零碎的、不經意的瞬間，被粉絲一一記錄下來。\n\nMAX 榮獲起床氣寶座。峻廷認真檢查照片時專注的側臉。家齊看著 MAX 表演時開心的表情。\n\n這些畫面沒什麼特別，就是工作前摸個貓、拍完照檢查一下成果、看隊友表演時真心為他開心。但正是這些「沒什麼特別」的瞬間，最讓人覺得真實。","media":[{"moment_id":"d5cepepp58ac739h0du0","type":"image","url":"/hidol/fanclub/48E50603-58DD-49C3-B999-175CB985E3EB-841836ED-FE73-4812-92C2-71EF146FA0EB.png","caption":"MAX 榮獲起床氣寶座","credit":"粉絲_492224","placement":"side-by-side","width":1179,"height":2556},{"moment_id":"d5ihjgku9egs73ak8o1g","type":"image","url":"/hidol/fanclub/8CAE54D8-AB99-4218-A124-4E104E09986F-9EB1E161-5DB5-4DF0-AA41-ACA3273781F6.jpeg","caption":"MAX 認真檢查照片","credit":"粉絲_464128","placement":"side-by-side","width":784,"height":1090},{"moment_id":"d5ihinme1bts73di5mjg","type":"image","url":"/hidol/fanclub/775A7C8B-737B-4961-AC25-73B7C6BFC68A-4FF71C36-E18B-4ECE-8224-72735C17B3A8.jpeg","caption":"家齊看 MAX 表演時的開心表情","credit":"粉絲_464128","placement":"side-by-side","width":2321,"height":3480}]},{"section_id":"divider-9","type":"divider"},{"section_id":"analysis-10","type":"text","content":"說到底，為什麼這些鏡頭外的瞬間這麼吸引人？\n\n有個有趣的發現：現在的粉絲更在意「真實性」而非「完美」。那些未經修飾的互動時刻，比精心製作的宣傳內容更容易引起共鳴。社群上，成員間的自然互動片段，分享次數比正式 MV 多很多。\n\n用更直白的話說：大家看膩了「完美偶像」的人設。\n\n你在舞台上可以很帥、很專業，但我也想看到你起床氣發作的樣子。想看到你摸貓時放鬆的表情。想看到你看隊友表演時，眼裡那種藏不住的欣賞。\n\n這些時刻讓偶像變得更像一個「真實的人」。不是想把你拉下神壇，而是想知道——燈光熄滅後，你是什麼樣子。那些不完美的小細節，反而讓人覺得「對，他們跟我一樣，也會有起床氣、也會想摸貓放鬆、也會真心為朋友感到開心」。\n\n這種連結感，是再完美的舞台都給不了的。"},{"section_id":"divider-11","type":"divider"},{"section_id":"conclusion-12","type":"text","content":"所以下次當你看到那些幕後花絮、彩排側拍、休息室日常時，不要覺得這只是「額外內容」。\n\n這些鏡頭外的瞬間，才是讓你真正認識他們的方式。\n\n浦洋看隆唱歌的眼神、上台前給貓貓拍背的溫柔、MAX 的起床氣、峻廷專注的側臉、家齊為隊友開心的表情——這些畫面串起來，就是一個完整的 FEniX。\n\n不只是舞台上的鳳凰，也是燈光熄滅後、鏡頭轉開時，那些真實的、可愛的、會起床氣也會寵溺地看著隊友的年輕人。\n\n而這種真實感，才是粉絲眼裡「滿滿的愛」。"}],"footer":{"moment_credits":{"粉絲_492224":3,"粉絲_464128":2},"contributing_fans":["粉絲_492224","粉絲_464128"],"external_sources":[],"related_stories":[{"story_id":"seen-in-crowd","title":"茫茫人海中，被你看見的那一刻","url":"#/story/seen-in-crowd","cover_image_url":"/hidol/fanclub/ACD6E73F-BDF6-4FF6-BD98-BCDFE7AC49FF-A358C803-6504-4D84-8204-AAE294C128A3.jpeg","relevance_score":0.85}]}};
+
+const STORIES = [
+  { id: 'seen-in-crowd', data: STORY_1, readingTime: 6, momentCount: 11, fans: 4 },
+  { id: 'mirror-outside-phoenix', data: STORY_2, readingTime: 5, momentCount: 5, fans: 2 },
+];
+
+// ── HELPERS ─────────────────────────────────────────────────────────────────
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function mediaEl(m, forGallery = false) {
+  const isVideo = m.type === 'video';
+  const src = isVideo ? (m.thumbnail_url || '') : (m.url || '');
+  const credit = m.credit ? (typeof m.credit === 'object' ? m.credit.user_display_name : m.credit) : '';
+  if (forGallery) {
+    return `<div class="gallery-item">
+      ${src ? `<img src="${src}" alt="${m.caption||''}" onerror="this.parentNode.innerHTML=placeholderHTML('${isVideo?'🎬':'🖼'}','${(m.caption||'').replace(/'/g,"&#39;")}')">` : placeholderHTML(isVideo?'🎬':'🖼', m.caption||'')}
+      <div class="gallery-item-overlay"><span>${m.caption||''}</span></div>
+    </div>`;
+  }
+  return `<div class="media-container">
+    ${src ? `<img class="media-inline" src="${src}" alt="${m.caption||''}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="media-placeholder" style="display:none"><div class="icon">${isVideo?'🎬':'🖼'}</div><div>${m.caption||''}</div></div>`
+    : `<div class="media-placeholder"><div class="icon">${isVideo?'🎬':'🖼'}</div><div>${m.caption||''}</div></div>`}
+    <div class="media-caption">
+      ${m.caption ? `<div>${m.caption}</div>` : ''}
+      ${credit ? `<div class="media-credit">📸 ${credit}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+function placeholderHTML(icon, caption) {
+  return `<div class="media-placeholder"><div class="icon">${icon}</div><div>${caption}</div></div>`;
+}
+
+function renderContent(raw) {
+  if (!raw) return '';
+  return raw.split('\n\n').map(para => {
+    if (para.startsWith('>') || para.startsWith('> ')) {
+      const q = para.replace(/^>\s?/, '').replace(/\n>\s?/g, '\n');
+      return `<blockquote>${q}</blockquote>`;
+    }
+    if (para.trim() === '') return '';
+    return `<p>${para.replace(/\n/g, '<br>')}</p>`;
+  }).join('');
+}
+
+// ── RENDER SECTION ───────────────────────────────────────────────────────────
+
+function renderSection(sec) {
+  switch (sec.type) {
+    case 'divider':
+      return `<div class="section-divider"><span class="divider-icon">✦</span></div>`;
+
+    case 'text': {
+      const heading = sec.heading ? `<h2>${sec.heading}</h2>` : '';
+      return `<div class="section-text">${heading}${renderContent(sec.content)}</div>`;
+    }
+
+    case 'trend_insight': {
+      const heading = sec.heading ? `<h2>${sec.heading}</h2>` : '';
+      return `<div class="section-insight">
+        <div class="insight-label">📊 趨勢觀察</div>
+        ${heading}${renderContent(sec.content)}
+      </div>`;
+    }
+
+    case 'moment_highlight': {
+      const heading = sec.heading ? `<h2>${sec.heading}</h2>` : '';
+      const mediaHTML = (sec.media || []).map(m => mediaEl(m)).join('');
+      return `<div class="section-moment">
+        <div class="section-moment-header">${heading}</div>
+        ${mediaHTML}
+        <div class="section-moment-body">${renderContent(sec.content)}</div>
+      </div>`;
+    }
+
+    case 'moment_gallery': {
+      const heading = sec.heading ? `<h2 style="margin-bottom:12px;font-size:17px;font-weight:800;">${sec.heading}</h2>` : '';
+      const galleryHTML = (sec.media || []).map(m => mediaEl(m, true)).join('');
+      return `<div class="section-moment" style="padding:0;">
+        <div style="padding:18px 20px 12px;">${heading}${renderContent(sec.content)}</div>
+        <div class="gallery-grid">${galleryHTML}</div>
+      </div>`;
+    }
+
+    default:
+      return '';
+  }
+}
+
+// ── RENDER STORY ─────────────────────────────────────────────────────────────
+
+function renderStory(storyObj) {
+  const s = storyObj.data;
+  const header = s.header || {};
+  const meta = s.meta || {};
+  const footer = s.footer || {};
+  const cover = header.cover || {};
+  const tags = (meta.keywords || []);
+  const pubDate = fmtDate(header.published_at || meta.published_at || new Date().toISOString());
+  const readTime = header.estimated_read_time_minutes || meta.reading_time_minutes || storyObj.readingTime;
+
+  const tagsHTML = tags.map(t => `<span class="tag">${t}</span>`).join('');
+
+  const sectionsHTML = (s.sections || []).map(renderSection).join('');
+
+  // Footer: contributors
+  let contributorsHTML = '';
+  const credits = footer.moment_credits;
+  if (Array.isArray(credits) && credits.length) {
+    contributorsHTML = credits.map(c => {
+      const initials = c.user_display_name.slice(-2);
+      return `<div class="contributor-item">
+        <div class="contributor-avatar">${initials}</div>
+        <span class="contributor-name">${c.user_display_name}</span>
+        <span class="contributor-count">· ${c.moment_count} 個 Moment</span>
+      </div>`;
+    }).join('');
+  } else if (credits && typeof credits === 'object') {
+    contributorsHTML = Object.entries(credits).map(([name, count]) => {
+      const initials = name.slice(-2);
+      return `<div class="contributor-item">
+        <div class="contributor-avatar">${initials}</div>
+        <span class="contributor-name">${name}</span>
+        <span class="contributor-count">· ${count} 個 Moment</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Related stories
+  let relatedHTML = '';
+  const related = footer.related_stories || [];
+  if (related.length) {
+    const items = related.map(r => {
+      const other = STORIES.find(s2 => s2.id === r.story_id);
+      return `<div class="related-card" onclick="showStory('${r.story_id}')">
+        <div class="related-card-cover">
+          ${r.cover_image_url ? `<img src="${r.cover_image_url}" onerror="this.style.display='none'">` : ''}
+        </div>
+        <div>
+          <div class="related-card-title">${r.title}</div>
+          <div class="related-card-meta">${other ? `${other.readingTime} 分鐘閱讀 · ${other.momentCount} 個 Moment` : ''}</div>
+        </div>
+      </div>`;
+    }).join('');
+    relatedHTML = `<div class="related-stories">
+      <h3>相關故事</h3>
+      ${items}
+    </div>`;
+  }
+
+  return `
+    <div class="story-cover">
+      ${cover.url ? `<img src="${cover.url}" alt="${cover.alt||header.title}" onerror="this.style.display='none'">` : ''}
+      <div class="story-cover-content">
+        <div class="story-cover-tags">${tagsHTML}</div>
+        <h1>${header.title}</h1>
+        ${header.subtitle ? `<p class="subtitle">${header.subtitle}</p>` : ''}
+        <div class="story-cover-meta">
+          <span>📅 ${pubDate}</span>
+          <span>⏱ ${readTime} 分鐘閱讀</span>
+          <span>📸 ${storyObj.momentCount} 個 Moment</span>
+        </div>
+      </div>
+    </div>
+    <div class="story-page">
+      <div class="story-body">${sectionsHTML}</div>
+      <div class="story-footer">
+        ${contributorsHTML ? `<div><h3>Moment 貢獻者</h3><div class="contributor-list">${contributorsHTML}</div></div>` : ''}
+        ${relatedHTML}
+      </div>
+    </div>`;
+}
+
+// ── INDEX ────────────────────────────────────────────────────────────────────
+
+function renderIndex() {
+  const grid = document.getElementById('storiesGrid');
+  grid.innerHTML = STORIES.map(s => {
+    const meta = s.data.meta || {};
+    const header = s.data.header || {};
+    const cover = header.cover || {};
+    const tags = (meta.keywords || []).slice(0,3).map(t => `<span class="tag">${t}</span>`).join('');
+    const pubDate = fmtDate(header.published_at || meta.published_at || new Date().toISOString());
+    return `
+      <div class="story-card" onclick="showStory('${s.id}')">
+        <div class="story-card-cover">
+          ${cover.url
+            ? `<img src="${cover.url}" alt="${header.title}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="cover-placeholder" style="display:none">🌸</span>`
+            : `<span class="cover-placeholder">🌸</span>`}
+        </div>
+        <div class="story-card-body">
+          <div class="story-card-tags">${tags}</div>
+          <h2>${header.title}</h2>
+          <p>${meta.description || ''}</p>
+          <div class="story-card-meta">
+            <span>📅 ${pubDate}</span>
+            <span>⏱ ${s.readingTime} 分鐘</span>
+            <span>📸 ${s.momentCount} Moments</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── ROUTING ──────────────────────────────────────────────────────────────────
+
+function showIndex() {
+  document.getElementById('pageIndex').classList.add('active');
+  document.getElementById('pageStory').classList.remove('active');
+  document.getElementById('navBack').style.display = 'none';
+  window.scrollTo(0, 0);
+}
+
+function showStory(id) {
+  const s = STORIES.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('storyContent').innerHTML = renderStory(s);
+  document.getElementById('pageIndex').classList.remove('active');
+  document.getElementById('pageStory').classList.add('active');
+  document.getElementById('navBack').style.display = '';
+  window.scrollTo(0, 0);
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+renderIndex();
+</script>
+</body>
+</html>

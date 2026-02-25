@@ -1,0 +1,343 @@
+{
+  "meta": {
+    "title": "三萬人一起哭的那個晚上",
+    "description": "為什麼有人願意從高雄搭五點半的高鐵？為什麼有人願意排六個小時只為了一個位置？為什麼三萬個陌生人可以在同一個瞬間一起哭？這不是一篇音樂祭的報導。這是關於三萬種準備方式、三萬種期待、和最後那個讓所有人都被拯救的夜晚。",
+    "og_image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800",
+    "keywords": [
+      "夏日音樂祭",
+      "現場體驗",
+      "集體共鳴",
+      "音樂的力量",
+      "Z世代文化"
+    ],
+    "reading_time_minutes": 6,
+    "published_at": "2026-02-24T10:18:08.010Z",
+    "url": "#/story/the-night-thirty-thousand-cried"
+  },
+  "header": {
+    "title": "三萬人一起哭的那個晚上",
+    "subtitle": "從高雄北上、排隊六小時、到螢光棒變色的瞬間——關於音樂如何拯救三萬個人的故事",
+    "cover": {
+      "url": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800",
+      "thumbnail_url": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400",
+      "alt_text": "音樂祭現場，舞台燈光照亮了整個場地，觀眾密集地站在一起",
+      "caption": "當副歌響起，三萬人一起唱的那一刻 📸 星星追光者",
+      "credit": {
+        "user_id": "u-101",
+        "user_display_name": "星星追光者",
+        "deep_link": "hidol://moment/m-001"
+      }
+    }
+  },
+  "sections": [
+    {
+      "section_id": "intro-0",
+      "type": "text",
+      "content": "為什麼有人願意從高雄搭五點半的高鐵？\n為什麼有人願意排六個小時只為了一個位置？\n為什麼三萬個陌生人可以在同一個瞬間一起哭？\n\n這不是一篇音樂祭的報導。這是關於三萬種準備方式、三萬種期待、和最後那個讓所有人都被拯救的夜晚。"
+    },
+    {
+      "section_id": "divider-1",
+      "type": "divider"
+    },
+    {
+      "section_id": "moment-highlight-2",
+      "type": "moment_highlight",
+      "heading": "凌晨五點半的決定",
+      "content": "> 「從高雄搭高鐵北上看音樂祭！5:30 的早班車，現在在車上興奮到睡不著。行李箱裡塞滿了應援物和換洗衣服。今天的目標：不要哭（大概做不到）」\n\n高雄特快車在早上五點半發車的時候，車上的興奮比睏意還要多。\n\n行李箱、手幅、螢光棒。還有一整天的期待。\n\n從高雄到台北，從決定買票到真的踏上高鐵，中間是兩週的準備和倒數。有人花三天做手幅、有人跟閨蜜討論了兩週的穿搭、有人在心裡默默規劃排隊攻略。\n\n這趟旅程在買票的那一刻就開始了。",
+      "moments": [
+        {
+          "moment_id": "m-009",
+          "media_index": 0,
+          "user_id": "u-109",
+          "user_display_name": "高雄特快車",
+          "media_type": "text",
+          "text_content": "從高雄搭高鐵北上看音樂祭！5:30 的早班車，現在在車上興奮到睡不著。行李箱裡塞滿了應援物和換洗衣服。今天的目標：不要哭（大概做不到）",
+          "caption": "早上五點半的高鐵，車上塞滿了應援物和一整天的期待",
+          "placement": "inline",
+          "deep_link": "hidol://moment/m-009",
+          "engagement": {
+            "likes": 543,
+            "comments": 67,
+            "shares": 8
+          }
+        }
+      ]
+    },
+    {
+      "section_id": "divider-3",
+      "type": "divider"
+    },
+    {
+      "section_id": "moment-highlight-4",
+      "type": "moment_highlight",
+      "heading": "三萬種準備方式",
+      "content": "手作達人小美花了三天做 LED 手幅。雷射切割的壓克力板、LED 燈條、還有自己設計的圖案。\n\n檸檬氣泡水和閨蜜們討論了兩個禮拜要穿什麼。最後決定：全部穿白色系配彩色配件。在人群中超好認。還有人問她們是不是同一個後援會的。\n\n> 「花了三天做的手幅終於完成了！用了 LED 燈條和雷射切割的壓克力板。音樂祭的時候要舉著它！希望能被看到 🥺」\n\n每個人準備的方式不一樣。但目的都一樣——讓這一天成為特別的一天。\n\n而所有的準備——手幅、穿搭、應援物——都是為了同一個瞬間。當燈光暗下來的那個瞬間。",
+      "moments": [
+        {
+          "moment_id": "m-008",
+          "media_index": 0,
+          "user_id": "u-108",
+          "user_display_name": "手作達人小美",
+          "media_type": "photo",
+          "text_content": "花了三天做的手幅終於完成了！用了 LED 燈條和雷射切割的壓克力板。音樂祭的時候要舉著它！希望能被看到 🥺",
+          "media_url": "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800",
+          "thumbnail_url": "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400",
+          "alt_text": "手工製作的 LED 手幅，發出藍白色光芒",
+          "caption": "花三天手作的 LED 手幅，希望能被看到 📸 手作達人小美",
+          "placement": "inline",
+          "deep_link": "hidol://moment/m-008",
+          "engagement": {
+            "likes": 756,
+            "comments": 89,
+            "shares": 15
+          }
+        },
+        {
+          "moment_id": "m-004",
+          "media_index": 0,
+          "user_id": "u-104",
+          "user_display_name": "檸檬氣泡水",
+          "media_type": "photo",
+          "text_content": "和閨蜜們的音樂祭穿搭！我們花了兩個禮拜討論要穿什麼 😂 最後決定全部穿白色系配彩色配件，在人群中超好認的！還有人問我們是不是同一個後援會的",
+          "media_url": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800",
+          "thumbnail_url": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400",
+          "alt_text": "四個女生穿著白色系服裝，配戴彩色配件，在音樂祭場地合照",
+          "caption": "和閨蜜們討論兩週的音樂祭穿搭 📸 檸檬氣泡水",
+          "placement": "inline",
+          "deep_link": "hidol://moment/m-004",
+          "engagement": {
+            "likes": 892,
+            "comments": 67,
+            "shares": 23
+          }
+        }
+      ]
+    },
+    {
+      "section_id": "divider-5",
+      "type": "divider"
+    },
+    {
+      "section_id": "trend-insight-6",
+      "type": "trend_insight",
+      "heading": "等等，為什麼在這個年代還有人願意這樣做？",
+      "content": "2025 年上半年，台灣音樂祭參與人次比去年增加了 40%。根據天下雜誌的報導，這波「報復性體驗消費」推動了整個現場演出市場的復甦。\n\n但數字背後的故事更有趣。\n\n社會學家說，音樂祭提供的不只是娛樂。更像是一種「當代朝聖」——你透過排隊、等待、和一群陌生人共同經歷一件事，來找到歸屬感。\n\n報導者的深度分析指出：排隊本身就是儀式的一部分。你不是在「等待」，你是在「參與」。\n\n而神經科學研究發現，當你跟一群人一起經歷音樂最震撼的那一刻，你的大腦會釋放催產素和多巴胺。那種感覺——科學人雜誌稱之為「集體情感共振」——就是為什麼三萬人可以同時落淚的原因。\n\n說白了：在這個每個人都盯著手機螢幕的時代，人們需要真實的連結。而音樂祭，就是那個連結發生的地方。",
+      "insights": [
+        {
+          "source_url": "https://www.cw.com.tw/article/5131234",
+          "source_title": "天下雜誌",
+          "highlight": "台灣音樂祭參與人次比去年增加了 40%",
+          "context": "報復性體驗消費"
+        },
+        {
+          "source_url": "https://www.twreporter.org/a/live-music-festival-ritual-economy",
+          "source_title": "報導者",
+          "highlight": "排隊本身就是儀式的一部分",
+          "context": "當代朝聖"
+        },
+        {
+          "source_url": "https://sa.ylib.com/MagArticle.aspx?id=5432",
+          "source_title": "科學人雜誌",
+          "highlight": "集體情感共振",
+          "context": "神經科學研究"
+        }
+      ]
+    },
+    {
+      "section_id": "divider-7",
+      "type": "divider"
+    },
+    {
+      "section_id": "moment-highlight-8",
+      "type": "moment_highlight",
+      "heading": "六個小時。你可以做什麼？",
+      "content": "六個小時。\n\n你可以從台北飛到東京。你可以看完三部電影。你可以睡個午覺再醒來。\n\n但音浪衝擊者選擇排隊。\n\n> 「排了六小時終於搶到的位置！腳已經不是我的了但聽到第一首歌的時候什麼疲勞都消失了。旁邊的大哥跟我說他從台中五點就出發了，真的是愛才會這樣」\n\n旁邊的大哥從台中五點出發。前面的女生說她昨天就來踩點了。後面的情侶在分享零食。\n\n六個小時，腳不是自己的。但當第一個音符響起，什麼疲勞都消失了。\n\n這就是「值得」的定義。",
+      "moments": [
+        {
+          "moment_id": "m-005",
+          "media_index": 0,
+          "user_id": "u-105",
+          "user_display_name": "音浪衝擊者",
+          "media_type": "photo",
+          "text_content": "排了六小時終於搶到的位置！腳已經不是我的了但聽到第一首歌的時候什麼疲勞都消失了。旁邊的大哥跟我說他從台中五點就出發了，真的是愛才會這樣",
+          "media_url": "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800",
+          "thumbnail_url": "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400",
+          "alt_text": "從觀眾視角拍攝的舞台，燈光絢爛，人群密集",
+          "caption": "排隊六小時搶到的位置，當第一首歌響起的瞬間 📸 音浪衝擊者",
+          "placement": "full-width",
+          "deep_link": "hidol://moment/m-005",
+          "engagement": {
+            "likes": 1205,
+            "comments": 93,
+            "shares": 31
+          }
+        }
+      ]
+    },
+    {
+      "section_id": "divider-9",
+      "type": "divider"
+    },
+    {
+      "section_id": "moment-highlight-10",
+      "type": "moment_highlight",
+      "heading": "當燈光暗下來",
+      "content": "大佳河濱公園。晚上八點。三萬人。\n\n燈光暗下來的那一刻，所有的等待都有了答案。\n\n星星追光者站在最前排。當副歌響起的時候，整個場地三萬人一起唱。她的眼淚直接用噴的。\n\n> 「天啊天啊天啊！！！第一次站在最前排，當副歌響起的時候整個場地三萬人一起唱，我的眼淚直接用噴的 😭 這就是現場的魔力吧，沒有任何螢幕可以傳達這種感覺」\n\n沒有任何螢幕可以傳達這種感覺。\n\n不是因為音響多大聲、不是因為燈光多炫、不是因為你站得多前面。\n\n而是因為你知道，此刻有三萬個人跟你有一樣的感受。你的情緒被放大了三萬倍。\n\n那種感覺，只有在現場才會懂。",
+      "moments": [
+        {
+          "moment_id": "m-001",
+          "media_index": 0,
+          "user_id": "u-101",
+          "user_display_name": "星星追光者",
+          "media_type": "photo",
+          "text_content": "天啊天啊天啊！！！第一次站在最前排，當副歌響起的時候整個場地三萬人一起唱，我的眼淚直接用噴的 😭 這就是現場的魔力吧，沒有任何螢幕可以傳達這種感覺",
+          "media_url": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800",
+          "thumbnail_url": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400",
+          "alt_text": "音樂祭現場，舞台燈光照亮了整個場地，觀眾密集地站在一起",
+          "caption": "最前排的視角：三萬人一起唱副歌的那一刻 📸 星星追光者",
+          "placement": "full-width",
+          "deep_link": "hidol://moment/m-001",
+          "engagement": {
+            "likes": 1523,
+            "comments": 89,
+            "shares": 45
+          }
+        }
+      ]
+    },
+    {
+      "section_id": "divider-11",
+      "type": "divider"
+    },
+    {
+      "section_id": "moment-highlight-12",
+      "type": "moment_highlight",
+      "heading": "螢光棒變色的瞬間",
+      "content": "安可曲。\n\n小鹿亂撞舉起手機錄影。整個場地的螢光棒從藍色變成金色。\n\n三萬支螢光棒。同時變色。\n\n> 「錄到了安可曲的完整版！整個場地的螢光棒從藍色變成金色的那一刻，我覺得自己見證了什麼很重要的事情。回家的路上一直在單曲循環」\n\n那一刻，你不只是觀眾。你是這場演出的一部分。\n\n你手上的螢光棒，和其他兩萬九千九百九十九支螢光棒，一起創造了那片金色的海。\n\n這就是端傳媒所說的「應援文化」——你不是被動接收，你是共同創造。\n\n而那個瞬間會一直留在你的記憶裡。回家的路上會一直單曲循環。",
+      "moments": [
+        {
+          "moment_id": "m-002",
+          "media_index": 0,
+          "user_id": "u-102",
+          "user_display_name": "小鹿亂撞",
+          "media_type": "video",
+          "text_content": "錄到了安可曲的完整版！整個場地的螢光棒從藍色變成金色的那一刻，我覺得自己見證了什麼很重要的事情。回家的路上一直在單曲循環",
+          "media_url": "https://example.com/videos/encore-moment.mp4",
+          "thumbnail_url": "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400",
+          "alt_text": "音樂祭安可曲現場，觀眾揮舞螢光棒，從藍色漸變為金色，氣氛震撼",
+          "caption": "安可曲時，三萬支螢光棒從藍色變成金色 📸 小鹿亂撞",
+          "placement": "full-width",
+          "deep_link": "hidol://moment/m-002",
+          "engagement": {
+            "likes": 2891,
+            "comments": 156,
+            "shares": 234
+          }
+        }
+      ]
+    },
+    {
+      "section_id": "divider-13",
+      "type": "divider"
+    },
+    {
+      "section_id": "moment-highlight-14",
+      "type": "moment_highlight",
+      "heading": "音樂是真的能拯救一個人的",
+      "content": "北極熊不怕冷本來不打算去。\n\n票價不便宜。而且要站一整天。但朋友硬是拉了他去。\n\n> 「其實我本來不打算去的。票價不便宜，而且要站一整天。但朋友硬是拉了我去。\n> \n> 現在我只想說：謝謝那個拉我去的朋友。\n> \n> 當燈光暗下來，第一個音符響起的時候，我理解了為什麼有人願意排隊八小時、願意從高雄特地北上、願意花一個月的薪水只為了那幾個小時。\n> \n> 音樂是真的能拯救一個人的。至少那天晚上，我被拯救了。」\n\n他理解了。\n\n為什麼有人願意從高雄搭五點半的高鐵。為什麼有人願意排六個小時。為什麼有人願意花三天做手幅。\n\n因為那天晚上，三萬個人都需要被拯救。\n\n而音樂做到了。",
+      "moments": [
+        {
+          "moment_id": "m-003",
+          "media_index": null,
+          "user_id": "u-103",
+          "user_display_name": "北極熊不怕冷",
+          "media_type": "text",
+          "text_content": "寫在音樂祭之後——\n\n其實我本來不打算去的。票價不便宜，而且要站一整天。但朋友硬是拉了我去。\n\n現在我只想說：謝謝那個拉我去的朋友。\n\n當燈光暗下來，第一個音符響起的時候，我理解了為什麼有人願意排隊八小時、願意從高雄特地北上、願意花一個月的薪水只為了那幾個小時。\n\n音樂是真的能拯救一個人的。至少那天晚上，我被拯救了。",
+          "caption": "北極熊不怕冷的音樂祭心得",
+          "placement": "inline",
+          "deep_link": "hidol://moment/m-003",
+          "engagement": {
+            "likes": 3456,
+            "comments": 278,
+            "shares": 189
+          }
+        }
+      ]
+    },
+    {
+      "section_id": "divider-15",
+      "type": "divider"
+    },
+    {
+      "section_id": "conclusion-16",
+      "type": "text",
+      "content": "演出結束了。人群散去。大佳河濱公園又恢復平靜。\n\n但那個感覺不會消失。\n\n六個小時的排隊、五點半的高鐵、三天做的手幅、兩週討論的穿搭——這一切都濃縮在那幾個小時裡。\n\n你會記得三萬人一起唱副歌的瞬間。你會記得螢光棒變色的那片金色海洋。你會記得當燈光暗下來，你知道自己不是一個人。\n\n這就是為什麼人們需要音樂祭。\n\n不是為了聽歌——你在家也能聽。而是為了那種「我們在一起」的感覺。為了在這個每個人都盯著螢幕的時代，有一個真實的、三萬人的、共同的瞬間。\n\n那個感覺會一直留著，直到下次，我們再見。"
+    }
+  ],
+  "footer": {
+    "moment_credits": [
+      {
+        "user_id": "u-101",
+        "user_display_name": "星星追光者",
+        "moment_count": 1
+      },
+      {
+        "user_id": "u-102",
+        "user_display_name": "小鹿亂撞",
+        "moment_count": 1
+      },
+      {
+        "user_id": "u-103",
+        "user_display_name": "北極熊不怕冷",
+        "moment_count": 1
+      },
+      {
+        "user_id": "u-104",
+        "user_display_name": "檸檬氣泡水",
+        "moment_count": 1
+      },
+      {
+        "user_id": "u-105",
+        "user_display_name": "音浪衝擊者",
+        "moment_count": 1
+      },
+      {
+        "user_id": "u-108",
+        "user_display_name": "手作達人小美",
+        "moment_count": 1
+      },
+      {
+        "user_id": "u-109",
+        "user_display_name": "高雄特快車",
+        "moment_count": 1
+      }
+    ],
+    "external_sources": [
+      {
+        "url": "https://www.cw.com.tw/article/5131234",
+        "title": "天下雜誌"
+      },
+      {
+        "url": "https://news.ltn.com.tw/news/life/breakingnews/4385621",
+        "title": "自由時報"
+      },
+      {
+        "url": "https://www.twreporter.org/a/live-music-festival-ritual-economy",
+        "title": "報導者"
+      },
+      {
+        "url": "https://www.billboard.com/pro/live-nation-2024-concert-report/",
+        "title": "Billboard"
+      },
+      {
+        "url": "https://sa.ylib.com/MagArticle.aspx?id=5432",
+        "title": "科學人雜誌"
+      },
+      {
+        "url": "https://theinitium.com/article/20250715-culture-fan-support-evolution/",
+        "title": "端傳媒"
+      }
+    ],
+    "related_stories": []
+  }
+}

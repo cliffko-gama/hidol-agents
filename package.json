@@ -1,0 +1,22 @@
+{
+  "name": "hidol-agents",
+  "version": "0.1.0",
+  "description": "hidol Feature Story AI Pipeline — Multi-agent system for generating feature stories from user Moments",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node --env-file=.env --import tsx src/main.ts",
+    "dev": "node --env-file=.env --import tsx --watch src/main.ts",
+    "generate-docs": "npx tsx scripts/generate-docs.ts",
+    "prod": "node --env-file=.env --import tsx src/scripts/run-prod.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}

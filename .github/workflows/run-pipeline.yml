@@ -1,0 +1,104 @@
+name: Run hidol Pipeline & Deploy
+
+# ─────────────────────────────────────────────
+# 觸發方式：
+#   1. schedule  — 自動定時（每週一 09:00 台灣時間）
+#   2. workflow_dispatch — 手動從 GitHub Actions 頁面執行
+#
+# 設定 GitHub Pages 後，執行完畢會自動更新網站
+# ─────────────────────────────────────────────
+on:
+  schedule:
+    - cron: '0 1 * * 1'   # UTC 01:00 = 台灣時間 09:00，每週一
+
+  workflow_dispatch:
+    inputs:
+      data_mode:
+        description: '資料來源'
+        required: true
+        default: 'mock'
+        type: choice
+        options:
+          - mock       # 使用 src/fixtures/mock-moments.ts 的測試資料
+          - production # 使用上傳的 moments JSON 檔案
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write   # 需要 push docs/ 回 repo
+
+    env:
+      # schedule 觸發時 inputs 為空，預設使用 mock；手動觸發時沿用選擇的值
+      DATA_MODE: ${{ github.event.inputs.data_mode || 'mock' }}
+
+    steps:
+      # ── 1. Checkout ──────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # 需要完整 git history 才能 push
+
+      # ── 2. Node.js 環境 ───────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # ── 3. 安裝依賴 ───────────────────────────
+      - name: Install dependencies
+        run: npm ci
+
+      # ── 4. 建立 .env（注入 API Key）────────────
+      - name: Create .env file
+        run: echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" > .env
+
+      # ── 5a. 執行 Pipeline（mock 模式）──────────
+      - name: Run pipeline with mock data
+        if: ${{ env.DATA_MODE == 'mock' }}
+        run: npm start
+        env:
+          NODE_NO_WARNINGS: 1
+
+      # ── 5b. 執行 Pipeline（production 模式）────
+      # production 模式：需要先上傳 moments JSON 到 repo
+      # 或透過 repository_dispatch + artifact 傳入
+      - name: Run pipeline with production data
+        if: ${{ env.DATA_MODE == 'production' }}
+        run: |
+          # 尋找 moments JSON 檔案（放在 repo 根目錄的 moments-input.json）
+          if [ -f "moments-input.json" ]; then
+            node --env-file=.env --import tsx src/scripts/run-prod.ts moments-input.json
+          else
+            echo "⚠️  找不到 moments-input.json，改用 mock 資料執行"
+            npm start
+          fi
+        env:
+          NODE_NO_WARNINGS: 1
+
+      # ── 6. 產生靜態網站 ────────────────────────
+      - name: Generate docs site
+        run: npm run generate-docs
+
+      # ── 7. Commit & Push docs/ ─────────────────
+      - name: Commit and push docs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if git diff --staged --quiet; then
+            echo "docs/ 沒有變更，跳過 commit"
+          else
+            STORY_COUNT=$(find docs/stories -name "*.json" 2>/dev/null | wc -l | tr -d ' ')
+            TRIGGER="${{ github.event_name }}"
+            git commit -m "deploy: update ${STORY_COUNT} stories (${TRIGGER}) [skip ci]"
+            git push
+            echo "✅ docs/ 已成功更新並推送"
+          fi
+
+      # ── 8. 清除 .env（安全性） ──────────────────
+      - name: Cleanup
+        if: always()
+        run: rm -f .env
