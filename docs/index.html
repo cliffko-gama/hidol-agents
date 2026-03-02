@@ -463,7 +463,7 @@ img { max-width: 100%; height: auto; display: block; }
 <!-- ── Navbar ── -->
 <nav class="nav">
   <span class="nav-logo" onclick="showIndex()">hidol</span>
-  <span class="nav-badge" id="story-count-badge">0 篇專題</span>
+  <span class="nav-badge" id="story-count-badge">1 篇專題</span>
   <button class="nav-back" id="nav-back-btn" onclick="showIndex()">← 返回列表</button>
 </nav>
 
@@ -477,16 +477,167 @@ img { max-width: 100%; height: auto; display: block; }
     </div>
   </div>
 
-  <div class="empty-state"><h3>還沒有故事</h3><p>執行 Pipeline 後，故事會出現在這裡。</p></div>
+  <div class="stories-grid" id="stories-grid">
+    <div class="story-card" data-story-id="fenix-2025-milestones">
+      <div class="card-image-wrapper">
+        <img class="card-image" src="/hidol/fanclub/DE600601-0E98-412F-86BD-430A075E61A7-8D519E3F-3E15-4DF0-8071-F0F77E66AA0A.jpeg" alt="與 FEniX 一起的 2025：跨年、漫博、專輯，每個瞬間都是里程碑" loading="lazy"
+          onerror="this.style.display='none'; this.parentElement.classList.add('no-img')">
+        <div class="card-overlay">
+          <div class="card-overlay-content">
+            <h3 class="card-overlay-title">與 FEniX 一起的 2025：跨年、漫博、專輯，每個瞬間都是里程碑</h3>
+          </div>
+        </div>
+        <span class="card-tag">FEniX</span>
+      </div>
+      <div class="card-body">
+        <h2 class="card-title">與 FEniX 一起的 2025：跨年、漫博、專輯，每個瞬間都是里程碑</h2>
+        <p class="card-desc">如果你是 FEniX 的粉，一定有過這樣的時刻——在跨年倒數前舉起手機、在漫博排隊時心跳加速、在專輯發行那天反覆聽每一首歌。</p>
+        <div class="card-footer">
+          <div class="card-user">
+            <span class="card-avatar">✨</span>
+            <span class="card-date">2026年3月2日</span>
+          </div>
+          <div class="card-meta">
+            
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ── 故事頁面 ── -->
 <div id="story-view">
-  
+  <div class="story-page" id="story-fenix-2025-milestones" style="display:none">
+    <div class="story-page-inner">
+      <!-- ── Hero ── -->
+      <div class="story-hero ">
+        <div class="story-hero-bg">
+          <img src="/hidol/fanclub/DE600601-0E98-412F-86BD-430A075E61A7-8D519E3F-3E15-4DF0-8071-F0F77E66AA0A.jpeg" alt=""
+            onerror="this.style.display='none'; this.parentElement.classList.add('no-img')">
+          <div class="story-hero-overlay"></div>
+        </div>
+        <div class="story-hero-content">
+          <div class="story-tags"><span class="tag">FEniX</span><span class="tag">參</span><span class="tag">漫博</span><span class="tag">跨年</span><span class="tag">追星</span><span class="tag">專輯品味</span></div>
+          <h1 class="story-title">與 FEniX 一起的 2025：跨年、漫博、專輯，每個瞬間都是里程碑</h1>
+          <p class="story-subtitle">從台南跨年舞台服到漫博上台前的緊張，從檸檬蜜桃到巴巴蘭姆蛋糕——這些碎片化的瞬間，拼湊出粉絲與 FEniX 共同走過的時間軸</p>
+          <div class="story-meta-row">
+            
+            
+            
+          </div>
+          <p class="cover-caption">2025 年台南跨年，FEniX 的透視舞台服讓粉絲又驚又喜</p>
+        </div>
+      </div>
+
+      <!-- ── Article Body ── -->
+      <div class="story-layout">
+        <!-- Floating sidebar (share) -->
+        <aside class="story-sidebar">
+          <button class="sidebar-btn" title="分享" onclick="navigator.clipboard?.writeText(location.href).then(()=>alert('連結已複製！'))">🔗</button>
+          <button class="sidebar-btn" title="返回列表" onclick="showIndex()">←</button>
+        </aside>
+
+        <article class="story-article">
+          <div class="story-body">
+            <section class="section-text"><p>如果你是 FEniX 的粉，一定有過這樣的時刻——在跨年倒數前舉起手機、在漫博排隊時心跳加速、在專輯發行那天反覆聽每一首歌，試圖用文字或味道記住這一切。</p><div class="para-break"></div><p>這篇文章記錄的，就是那些瞬間。從 2024 年底的台南跨年到 2025 年 7 月的漫博見面會，從《參》專輯的檸檬酸澀到巴巴蘭姆蛋糕的法式風味——每個碎片化的瞬間，都是你與 FEniX 一起走過的里程碑。</p></section>
+<div class="story-divider"></div>
+<section class="section-moment">
+        <div class="moment-card-inner">
+          <div class="moment-tag"><span>台南跨年：那套透視舞台服</span></div>
+          <div class="moment-body"><p>粉絲_32061184 在 2025 年台南跨年現場，注意到一個細節：</p><div class="para-break"></div><blockquote>「衣服……很透_(´ཀ`」 ∠)_沒說沒注意一說嚇一跳，但真的超級帥餒這套 25 年台南跨年的服裝」</blockquote><div class="para-break"></div><p>這就是粉絲追星的真實樣貌。不是只看舞台上的整體畫面，而是會注意到舞台燈光下那套服裝的透視感——那種「嚇一跳但又覺得超帥」的複雜情緒，是只有在現場的人才懂的。</p><div class="para-break"></div><p>[根據 NOWnews 報導](https://www.nownews.com/news/6625330)，2025 年台南跨年晚會有 FEniX、動力火車、玖壹壹等大咖明星同台演出，倒數時加碼 180 秒煙火秀。但對粉絲來說，比煙火更珍貴的，是那套透視舞台服、那個角度的光線、那一瞬間「天啊他們真的在我面前」的心跳。</p></div>
+        </div>
+      </section>
+<div class="story-divider"></div>
+<section class="section-moment">
+        <div class="moment-card-inner">
+          <div class="moment-tag"><span>漫博見面會：五個人在等你</span></div>
+          <div class="moment-body"><p>2025 年 7 月漫博見面會，粉絲_32061184 抽到了上台機會。</p><div class="para-break"></div><blockquote>「準備上台就發現五個人這樣等著（？）其實也會緊張餒 XDDD 很幸運可以上台還帶了熊熊跟家齊合照🧸是非常非常幸福的一天！我愛漫博🥰」</blockquote><div class="para-break"></div><p>想像一下那個畫面：你走上舞台，五個人在台上等你。不是遠遠地看著他們，而是他們在看著你。那種緊張跟幸福並存的感覺，就是追星最珍貴的時刻。</p><div class="para-break"></div><p>[根據購物橘子 Gamania 的資訊](https://blog.shopping.gamania.com/anime/2025-comic-exhibition-info)，2025 漫博於 7 月 24 日至 28 日在台北世貿一館舉行，現場有聲優見面會、VTuber 活動及各式周邊販售。但對粉絲來說，最值得的不是一票逛三展，而是那個「五個人在等你」的瞬間——那是你從火星時期就開始應援的他們，現在站在舞台上，看著你。💓</p></div>
+        </div>
+      </section>
+<div class="story-divider"></div>
+<section class="section-insight"><h3 class="insight-heading">為什麼要用味道記專輯？</h3><p>Z 世代粉絲追星的方式，跟上一代很不一樣。他們不只是尖叫、應援、買周邊——他們會用「聯覺」記錄偶像。</p><div class="para-break"></div><p>什麼是聯覺？就是當你聽到一首歌，腦海中會浮現一種味道、一個顏色、一種觸感。這種「五感追星」方式，更私人、更具創作性，也更難被複製。</p><div class="para-break"></div><p>這就是為什麼當 FEniX 第三張專輯《參》在 2025 年 12 月 19 日發行時，粉絲們會開始用味道描述它——因為這是他們記住這張專輯、記住這個時刻最真實的方式。</p></section>
+<div class="story-divider"></div>
+<section class="section-gallery"><h3 class="gallery-heading">用味道記住專輯：檸檬、蜜桃、還有巴巴蘭姆蛋糕</h3><p>粉絲_55516160 是這樣描述《參》的：</p><div class="para-break"></div><blockquote>「你覺得新專輯《參》的味道是什麼</blockquote><blockquote>就像檸檬一樣酸澀但也有著蜜桃般的香甜</blockquote><blockquote>有著晴朗的春天花叢被百花圍繞的香味</blockquote><blockquote>也有著夏日細雨後的清新空氣味道</blockquote><blockquote>我想參專帶給我的感覺就是這麼多元</blockquote><blockquote>一如 FEniX 發展有多種可能性</blockquote><blockquote>可以是甜美令人心動的存在</blockquote><blockquote>也能是帥氣冷咧的存在✨」</blockquote><div class="para-break"></div><p>檸檬酸澀、蜜桃香甜、春天花香、雨後清新——這些不是文案，是真實的感受。當你聽《參》的時候，你的大腦會自動把旋律轉譯成味道，把歌詞轉譯成畫面。</p><div class="para-break"></div><p>粉絲_13492224 則用另一種方式詮釋《參》：</p><div class="para-break"></div><blockquote>「《參》的味道是『巴巴蘭姆蛋糕』</blockquote><blockquote>我覺得 FEniX 新專輯《參》的味道是『巴巴蘭姆蛋糕』，味道層次鮮明且成熟，風味是酒香濃郁卻不嗆口、甜而不膩的，跟《參》專輯很像，歌曲很鮮明，勇於嘗試突破，濃郁情感帶著細膩，而且『巴巴蘭姆蛋糕』也是起源於法國，流行於法國和義大利的點心，《參》所以非常適合！」</blockquote><div class="para-break"></div><p>巴巴蘭姆蛋糕——法式點心，酒香濃郁卻不嗆口，甜而不膩。這種細膩的品味方式，不只是在說專輯好聽，而是在說「我真的有認真聽、認真感受、認真想過怎麼說出來」。</p><div class="para-break"></div><p>[根據 MTV 音樂頻道報導](https://www.mtv.com.tw/news/newsdetail/12885)，FEniX 全新專輯《參》於 2025 年 12 月 19 日正式發行，華納音樂斥資 500 萬前進歐洲南法取景拍攝，實體專輯包括「蔚藍海岸版」及「甜水小鎮版」。但對粉絲來說，比南法取景更重要的，是這張專輯在他們心中的味道——那是屬於他們自己的、無法被複製的記憶。</p></section>
+<div class="story-divider"></div>
+<section class="section-text"><h2 class="section-heading">從火星到 FEniX：你在場，他們在發光</h2><p>如果你看過《原子少年》，你一定知道「火星」的故事。[根據 Dcard 追星板的分享](https://www.dcard.tw/f/entertainer/p/241730122)，FEniX 由選秀節目《原子少年》火星成員組成，包括夏浦洋、陳峻廷、曹家齊、MAX、李承隆五人。當年火星未能在節目中出道，靠粉絲組成「救火隊」應援，最終促成 FEniX 成團。</p><div class="para-break"></div><p>這段敘事，不只是偶像的故事，更是粉絲與偶像共同書寫的成長史。</p><div class="para-break"></div><p>從台南跨年的透視舞台服、漫博見面會的緊張與幸福、到《參》專輯用味道記錄的每一首歌——這些瞬間裡，粉絲不只是旁觀者，更是參與者。你在現場舉燈牌，他們在舞台上發光。你用檸檬和蜜桃描述專輯，他們在南法拍下蔚藍海岸。</p><div class="para-break"></div><p>而《參》這張專輯的概念——「第三次進化」「浴火重生」——也呼應了 FEniX 的團名 Phoenix。從火星到 FEniX，每一步都有粉絲在場。</p><div class="para-break"></div><p>這不是單向的仰望。而是雙向的陪伴與見證。</p></section>
+<div class="story-divider"></div>
+<section class="section-text"><p>回到粉絲_13492224 分享的另一則 Moment——「歲歲和年年」。這是 FEniX 成員之間的對話，也是粉絲與偶像之間的默契。</p><div class="para-break"></div><p>每一個跨年、每一場見面會、每一張專輯發行，都是你與 FEniX 一起走過的里程碑。那些透視舞台服、那些上台前的緊張、那些用味道記錄的感受——這些碎片化的瞬間，拼湊出一個完整的追星日常。</p><div class="para-break"></div><p>你有沒有這樣的追星幸運瞬間呢？是一個舞台細節、一次合照機會、還是一張專輯帶給你的某種味道？留言告訴我們 🥹</p></section>
+          </div>
+          <footer class="story-footer">
+            <div class="source-moments">
+          <h4>引用的 Moment</h4>
+          <div class="source-moments-grid">
+            
+              <div class="source-moment-card">
+                
+                <div class="smc-body">
+                  <div class="smc-user">
+                    <span class="smc-avatar">粉</span>
+                    <span class="smc-name">粉絲_32061184</span>
+                  </div>
+                  <p class="smc-text">衣服……很透_(´ཀ`」 ∠)_沒說沒注意一說嚇一跳，但真的超級帥餒這套25年台南跨年的服裝</p>
+                  
+                </div>
+              </div>
+              <div class="source-moment-card">
+                
+                <div class="smc-body">
+                  <div class="smc-user">
+                    <span class="smc-avatar">粉</span>
+                    <span class="smc-name">粉絲_32061184</span>
+                  </div>
+                  <p class="smc-text">準備上台就發現五個人這樣等著（？）其實也會緊張餒XDDD很幸運可以上台還帶了熊熊跟家齊合照🧸是非常非常幸福的一天！我愛漫博🥰</p>
+                  
+                </div>
+              </div>
+              <div class="source-moment-card">
+                
+                <div class="smc-body">
+                  <div class="smc-user">
+                    <span class="smc-avatar">粉</span>
+                    <span class="smc-name">粉絲_55516160</span>
+                  </div>
+                  <p class="smc-text">你覺得新專輯《參》的味道是什麼
+就像檸檬一樣酸澀但也有著蜜桃般的香甜
+有著晴朗的春天花叢被百花圍繞的香味
+也有著夏日細雨後的清新空氣味道
+我想參專帶給我的感覺就是這麼多元
+一如FEniX發展有多種可能性
+可以是甜美令人心動的存在
+也能是帥氣…</p>
+                  
+                </div>
+              </div>
+              <div class="source-moment-card">
+                
+                <div class="smc-body">
+                  <div class="smc-user">
+                    <span class="smc-avatar">粉</span>
+                    <span class="smc-name">粉絲_13492224</span>
+                  </div>
+                  <p class="smc-text">《參》的味道是『巴巴蘭姆蛋糕』
+我覺得FEniX新專輯《參》的味道是『巴巴蘭姆蛋糕』，味道層次鮮明且成熟，風味是酒香濃郁卻不嗆口、甜而不膩的，跟《參》專輯很像，歌曲很鮮明，勇於嘗試突破，濃郁情感帶著細膩，而且『巴巴蘭姆蛋糕』也是起源於法國，…</p>
+                  
+                </div>
+              </div>
+          </div>
+        </div>
+            <div class="story-sources">
+          <h4>延伸閱讀</h4>
+          <a href="https://www.nownews.com/news/6625330" target="_blank" rel="noopener noreferrer">NOWnews - 2025年台南跨年晚會</a><a href="https://blog.shopping.gamania.com/anime/2025-comic-exhibition-info" target="_blank" rel="noopener noreferrer">購物橘子 Gamania - 2025 漫博資訊</a><a href="https://www.mtv.com.tw/news/newsdetail/12885" target="_blank" rel="noopener noreferrer">MTV 音樂頻道 - FEniX《參》專輯報導</a><a href="https://www.dcard.tw/f/entertainer/p/241730122" target="_blank" rel="noopener noreferrer">Dcard 追星板 - FEniX 火星故事</a>
+        </div>
+            
+          </footer>
+        </article>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-const STORY_IDS = [];
+const STORY_IDS = ["fenix-2025-milestones"];
 
 function showIndex() {
   document.getElementById('index-view').style.display = '';
