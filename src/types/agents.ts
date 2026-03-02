@@ -102,23 +102,25 @@ export interface AgentBInput {
   /** 要研究的主題 */
   topic: Topic;
   /**
-   * 該主題的 Moment 摘要（輕量版，不含媒體檔案）。
-   * 供 Agent B 了解現有素材的豐富程度，
-   * 以決定是否需要更深入的外部搜尋來補充背景脈絡。
+   * 該主題的 Moment 摘要，包含結構化的互動與行為信號。
+   * Agent B 利用這些信號萃取「話題性」因子，再驅動外部搜尋。
    */
   moments_summary?: {
     count: number;
     avg_text_length: number;
-    /** 最多 5 則代表性文字，用於理解現有素材的語境 */
+    /** 代表性文字（最多 5 則），用於理解語境 */
     sample_texts: string[];
+    /** 互動最高的 Moment（最多 5 則），含結構化資訊 */
+    top_moments?: Array<{
+      text: string;
+      engagement_likes: number;
+      has_media: boolean;
+    }>;
   };
   /** 研究深度控制 */
   research_config?: {
-    /** 最多搜尋幾輪 */
     max_search_rounds: number;
-    /** 偏好的搜尋語言 */
     languages: ("zh-TW" | "zh-CN" | "en" | "ja" | "ko")[];
-    /** 偏好關注的平台 */
     focus_platforms?: string[];
   };
 }
@@ -150,18 +152,32 @@ export interface SocialInsight {
 }
 
 export interface AgentBOutput {
-  /** 網路上找到的相關趨勢文章 */
+  /** 網路上找到的相關趨勢文章（只放真實搜尋到的 URL） */
   web_trends: WebTrend[];
-  /** 社群動態洞察 */
+  /** 社群平台的動態洞察 */
   social_insights: SocialInsight[];
-  /** 建議的切入角度（基於趨勢研究） */
+  /** 建議的切入角度（結合 Moment 信號與外部研究） */
   suggested_angles: string[];
   /**
-   * 趨勢總結摘要
-   * 這段文字會直接作為 Agent C 的 context，
-   * 應該包含最重要的趨勢發現和可以融入文章的觀點。
+   * 綜合背景摘要（直接作為 Agent C 的 context）。
+   * 整合「Moment 自身話題信號」與「外部社群脈絡」，
+   * 300-500 字，讓撰稿者能直接轉化為有深度的段落。
    */
   context_summary: string;
+  /**
+   * 從 Moment 自身萃取的話題性信號。
+   * 用於解釋「為什麼這批 Moment 值得寫成 Feature Story」。
+   */
+  moment_trend_signals?: {
+    /** 反覆出現的關鍵字或主題詞 */
+    keywords: string[];
+    /** 粉絲具體行為模式（例如：排隊、手作應援、等待揭曉） */
+    fan_behaviors: string[];
+    /** 情感主題（例如：期待落空又釋懷、感動到哭、成就感） */
+    emotional_themes: string[];
+    /** 話題性一句話分析：為什麼這個主題有共鳴？ */
+    trending_factor: string;
+  };
 }
 
 // ============================================================

@@ -180,6 +180,16 @@ export async function runPipeline(
       .map((m) => m.text_content ?? "")
       .filter((t) => t.length > 0);
 
+    // 互動最高的前 5 則 Moment（有 likes 優先，否則取前 5）
+    const topMomentsForB = [...topicMoments]
+      .sort((a, b) => (b.engagement?.likes ?? 0) - (a.engagement?.likes ?? 0))
+      .slice(0, 5)
+      .map((m) => ({
+        text: (m.text_content ?? "").slice(0, 150),  // 限長避免超 token
+        engagement_likes: m.engagement?.likes ?? 0,
+        has_media: (m.media?.length ?? 0) > 0,
+      }));
+
     let bResult: AgentBOutput;
     try {
       bResult = await runAgentB({
@@ -188,6 +198,7 @@ export async function runPipeline(
           count: topicMoments.length,
           avg_text_length: avgTextLength,
           sample_texts: sampleTexts,
+          top_moments: topMomentsForB,
         },
         research_config: {
           max_search_rounds: config.research.max_search_rounds,

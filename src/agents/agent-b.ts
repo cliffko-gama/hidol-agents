@@ -1,8 +1,11 @@
 /**
  * Agent B — 趨勢研究（Trend Research）
  *
- * 使用 Anthropic 內建的 web_search_20250305 工具進行真實網路搜尋。
- * 當主題的 Moment 素材稀薄時，會增加搜尋深度以補充外部脈絡。
+ * 兩段式研究策略：
+ *   Phase 1：從 Moment 自身萃取「話題性信號」（關鍵字、粉絲行為、情感主題）
+ *   Phase 2：以信號驅動外部社群搜尋，找到能豐富文章的外部脈絡
+ *
+ * 工具：web_search_20250305（Anthropic 內建，server-side 執行）
  */
 
 import type { AgentBInput, AgentBOutput } from "../types/agents.js";
@@ -10,10 +13,6 @@ import { AGENT_B_SYSTEM_PROMPT } from "../prompts/agent-b.js";
 import { callAgentAgentic, extractJSON } from "../lib/call-agent.js";
 import { QUALITY_MODEL } from "../lib/client.js";
 
-/**
- * Anthropic 內建的 web search 工具。
- * 實際搜尋由 Anthropic 伺服器端執行，client 只需掛載此工具並處理 tool_use 迴圈。
- */
 const WEB_SEARCH_TOOL = {
   type: "web_search_20250305",
   name: "web_search",
@@ -21,98 +20,149 @@ const WEB_SEARCH_TOOL = {
 
 export async function runAgentB(input: AgentBInput): Promise<AgentBOutput> {
   const momentCount = input.moments_summary?.count ?? input.topic.moment_ids.length;
-  const isContentThin = input.topic.richness === "low" || momentCount < 6;
+  const isContentThin = input.topic.richness === "low" || momentCount < 5;
   const baseRounds = input.research_config?.max_search_rounds ?? 3;
-  const maxSearchRounds = isContentThin ? baseRounds + 3 : baseRounds;
+  // 素材稀薄時多搜幾輪；但最多 5 輪，避免超 token
+  const maxSearchRounds = Math.min(isContentThin ? baseRounds + 2 : baseRounds, 5);
 
   console.log(
     `[Agent B] 研究主題「${input.topic.title}」` +
     ` (richness=${input.topic.richness}, moments=${momentCount}, maxRounds=${maxSearchRounds})`
   );
 
-  // 組裝 moments 摘要段落（提供給 LLM 判斷素材豐富度）
-  const momentsSummarySection = input.moments_summary
+  // ── Phase 1 提示：Moment 話題信號區塊 ───────────────────────
+  const topMomentsSection = input.moments_summary?.top_moments?.length
     ? `
-素材豐富度評估：
-- Moment 數量: ${input.moments_summary.count} 則
-- 平均文字長度: ${input.moments_summary.avg_text_length} 字
-- 主題豐富度自評: ${input.topic.richness}
-${isContentThin ? "⚠️ 素材偏稀薄，請加強外部搜尋以補充背景脈絡，讓後續撰稿有足夠資料。" : ""}
+互動最高的 Moment（依 likes 排序）：
+${input.moments_summary.top_moments.map((m, i) =>
+  `[${i + 1}] ${m.engagement_likes} 讚 | ${m.has_media ? "有圖/影片" : "純文字"} | "${m.text.slice(0, 120)}${m.text.length > 120 ? "…" : ""}"`
+).join("\n")}`.trim()
+    : "";
 
-現有 Moment 代表性文字（供了解素材語境，最多 5 則）：
-${input.moments_summary.sample_texts.map((t, i) => `[${i + 1}] ${t.slice(0, 120)}${t.length > 120 ? "…" : ""}`).join("\n")}
-`.trim()
-    : `素材豐富度：${input.topic.richness}（Moment 數量：${momentCount} 則）`;
+  const sampleSection = input.moments_summary?.sample_texts?.length
+    ? `
+代表性 Moment 文字（最多 5 則）：
+${input.moments_summary.sample_texts.map((t, i) => `[${i + 1}] ${t.slice(0, 100)}${t.length > 100 ? "…" : ""}`).join("\n")}`.trim()
+    : "";
+
+  const momentDataSection = [topMomentsSection, sampleSection].filter(Boolean).join("\n\n");
+
+  // ── 搜尋策略提示 ───────────────────────────────────────────
+  const thinContentNote = isContentThin
+    ? `\n⚠️ 素材偏稀薄（${momentCount} 則 Moment）：請執行更深入的外部搜尋，讓 context_summary 即使 Moment 少也有充分脈絡。`
+    : "";
 
   const userMessage = `
-請針對以下主題進行趨勢研究，使用 web_search 工具搜尋相關資訊。
+## 研究任務
 
-主題資訊：
-- 標題: ${input.topic.title}
-- 描述: ${input.topic.description}
-- 關鍵字: ${input.topic.keywords.join(", ")}
-- 建議敘事角度: ${input.topic.suggested_narrative}
+主題：${input.topic.title}
+描述：${input.topic.description}
+關鍵字：${input.topic.keywords.join("、")}
+建議敘事角度：${input.topic.suggested_narrative}
+素材豐富度：${input.topic.richness}（${momentCount} 則 Moment）${thinContentNote}
 
-${momentsSummarySection}
+---
 
-研究設定：
-- 搜尋語言優先順序: ${input.research_config?.languages?.join(", ") ?? "zh-TW, en"}
-- 優先關注平台: ${input.research_config?.focus_platforms?.join(", ") ?? "Dcard, PTT, Instagram, X/Twitter, YouTube"}
-${isContentThin ? `
-⚠️ 素材稀薄模式（Moment 少於 6 則或豐富度為 low）：
-請執行 **更深入** 的搜尋，補充後續撰稿所需的外部脈絡：
-1. 搜尋此藝人/主題近期的粉絲活動新聞與官方公告
-2. 搜尋「${input.topic.keywords[0]} 粉絲 心得 討論」於 Dcard / PTT / 各社群平台的反應
-3. 搜尋此類型粉絲互動文化（見面會、抽籤活動等）的趨勢報導
-4. 搜尋可以補充文章深度的相關文化背景資訊
-目標：提供足夠豐富的 context_summary，讓文章即使 Moment 少也有深度和廣度。
-` : ""}
+## Phase 1：Moment 話題信號分析（在搜尋前先完成）
 
-搜尋策略（依序執行）：
-1. 核心搜尋：用主要 keywords 搜尋最新相關新聞和文章
-2. 社群聲量搜尋：搜尋「${input.topic.keywords[0]} 粉絲 討論」了解網路討論動態
-3. 趨勢脈絡搜尋：搜尋此現象的更廣背景趨勢（例如「台灣偶像粉絲見面會文化」）
-4. 若主題涉及國際藝人：用英文、日文或韓文補搜一輪
+請先分析以下 Moment 素材，萃取「話題性信號」：
 
-完成搜尋後，輸出研究結果的 JSON。
+${momentDataSection || `（素材摘要：${input.topic.richness} 豐富度，${momentCount} 則）`}
 
-⚠️ 重要規則：
-- web_trends 中的 url 只能放搜尋到的真實 URL，不能使用 example.com 或任何虛構 URL
-- 若搜尋不到有效外部來源，請將 web_trends 保持為空陣列 []
-- 把所有重要資訊放入 context_summary 和 social_insights（這是最重要的輸出）
-- context_summary 要寫得豐富具體（300-500 字），讓撰稿者有足夠的素材使用
+分析重點：
+1. **關鍵字**：Moment 中反覆出現的詞彙、地名、人名、活動名稱
+2. **粉絲行為**：這批粉絲在做什麼？（排隊、手作應援、追星旅行、等待揭曉...）
+3. **情感主題**：主要情緒是什麼？（期待、感動、共鳴、遺憾、成就感...）
+4. **話題性因子**：為什麼這個主題值得寫成 Feature Story？它的 "共鳴點" 在哪？
+
+---
+
+## Phase 2：以信號驅動外部社群搜尋
+
+使用 web_search 工具，依序執行以下搜尋（使用 Phase 1 萃取的關鍵字）：
+
+1. **核心搜尋**：「${input.topic.keywords.slice(0, 2).join(" ")} 粉絲 2025」
+2. **社群聲量**：「${input.topic.keywords[0]} Dcard」或「${input.topic.keywords[0]} PTT 討論」
+3. **文化背景**：搜尋這類粉絲行為的更廣趨勢（例如：台灣偶像見面會文化、粉絲應援文化）
+4. **延伸脈絡**：搜尋類似事件或現象，找到能讓文章有「普遍共鳴」的外部觀點
+
+搜尋語言優先順序：${input.research_config?.languages?.join("、") ?? "繁體中文、英文"}
+
+---
+
+## 輸出指示
+
+完成所有搜尋後，**直接輸出 JSON**，不要有任何前置說明或後記。
+
+輸出格式：
+\`\`\`json
+{
+  "moment_trend_signals": {
+    "keywords": ["關鍵字1", "關鍵字2"],
+    "fan_behaviors": ["具體行為描述1", "具體行為描述2"],
+    "emotional_themes": ["情感主題1", "情感主題2"],
+    "trending_factor": "一句話說明這個主題為什麼有共鳴"
+  },
+  "web_trends": [
+    {
+      "title": "文章標題",
+      "source": "媒體名稱",
+      "url": "真實搜尋到的 URL（禁止 example.com）",
+      "summary": "50-100 字摘要",
+      "published_at": "ISO 日期（若可知）",
+      "relevance": "high 或 medium"
+    }
+  ],
+  "social_insights": [
+    {
+      "platform": "平台名稱",
+      "trend_description": "該平台上的具體討論描述",
+      "sample_content": "代表性討論內容",
+      "estimated_buzz": "viral / trending / moderate / niche"
+    }
+  ],
+  "suggested_angles": [
+    "切入角度1：說明理由",
+    "切入角度2：說明理由"
+  ],
+  "context_summary": "300-500 字。整合 Moment 話題信號與外部社群脈絡，讓撰稿者能直接轉化為文章段落。必須具體描述：粉絲的真實行為與情感、外部趨勢驗證、值得深挖的觀點。"
+}
+\`\`\`
+
+⚠️ URL 規則：web_trends 只放 web_search 搜尋到的真實 URL，找不到就保持空陣列 []。
 `.trim();
 
   const response = await callAgentAgentic({
     model: QUALITY_MODEL,
     systemPrompt: AGENT_B_SYSTEM_PROMPT,
     userMessage,
-    maxTokens: 8192,
+    maxTokens: 6000,  // 縮小 max_tokens 降低 rate limit 壓力
     tools: [WEB_SEARCH_TOOL],
-    maxRounds: maxSearchRounds + 5, // 給 tool_use 輪次額外的緩衝空間
+    maxRounds: maxSearchRounds + 4,
   });
 
   const result = extractJSON<AgentBOutput>(response);
 
-  // 安全防護：過濾掉明顯虛構的 URL
-  const originalTrendCount = (result.web_trends ?? []).length;
+  // 過濾虛構 URL
+  const originalCount = (result.web_trends ?? []).length;
   result.web_trends = (result.web_trends ?? []).filter(
     (t) => t.url && !t.url.includes("example.com") && t.url.startsWith("http")
   );
-  const filteredCount = originalTrendCount - result.web_trends.length;
-  if (filteredCount > 0) {
-    console.log(`[Agent B] ⚠️ 過濾掉 ${filteredCount} 個虛構 URL（example.com 等）`);
+  const filtered = originalCount - result.web_trends.length;
+  if (filtered > 0) {
+    console.log(`[Agent B] ⚠️ 過濾掉 ${filtered} 個虛構 URL`);
   }
 
   // 確保必要欄位存在
-  result.social_insights = result.social_insights ?? [];
-  result.suggested_angles = result.suggested_angles ?? [];
-  result.context_summary = result.context_summary ?? "";
+  result.social_insights   = result.social_insights   ?? [];
+  result.suggested_angles  = result.suggested_angles  ?? [];
+  result.context_summary   = result.context_summary   ?? "";
+  result.moment_trend_signals = result.moment_trend_signals ?? undefined;
 
   console.log(
-    `[Agent B] 研究完成: ${result.web_trends.length} 則有效趨勢, ` +
+    `[Agent B] ✅ 完成: ${result.web_trends.length} 篇趨勢文章, ` +
     `${result.social_insights.length} 則社群洞察, ` +
-    `${result.suggested_angles.length} 個建議角度`
+    `${result.moment_trend_signals?.keywords.length ?? 0} 個話題關鍵字`
   );
 
   return result;
