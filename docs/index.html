@@ -463,7 +463,7 @@ img { max-width: 100%; height: auto; display: block; }
 <!-- ── Navbar ── -->
 <nav class="nav">
   <span class="nav-logo" onclick="showIndex()">hidol</span>
-  <span class="nav-badge" id="story-count-badge">0 篇專題</span>
+  <span class="nav-badge" id="story-count-badge">1 篇專題</span>
   <button class="nav-back" id="nav-back-btn" onclick="showIndex()">← 返回列表</button>
 </nav>
 
@@ -477,16 +477,106 @@ img { max-width: 100%; height: auto; display: block; }
     </div>
   </div>
 
-  <div class="empty-state"><h3>還沒有故事</h3><p>執行 Pipeline 後，故事會出現在這裡。</p></div>
+  <div class="stories-grid" id="stories-grid">
+    <div class="story-card" data-story-id="fenix-distance-moments">
+      <div class="card-image-wrapper">
+        <img class="card-image" src="/hidol/fanclub/E8FE82DD-EB81-4DD2-B032-3B6ED3A64FB2-4F9C5641-ACDE-428A-BB5A-50B97411E320.jpeg" alt="我們與 FEniX 的距離：那些讓你覺得『又近了一點』的瞬間" loading="lazy"
+          onerror="this.style.display='none'; this.parentElement.classList.add('no-img')">
+        <div class="card-overlay">
+          <div class="card-overlay-content">
+            <h3 class="card-overlay-title">我們與 FEniX 的距離：那些讓你覺得『又近了一點』的瞬間</h3>
+          </div>
+        </div>
+        <span class="card-tag">FEniX</span>
+      </div>
+      <div class="card-body">
+        <h2 class="card-title">我們與 FEniX 的距離：那些讓你覺得『又近了一點』的瞬間</h2>
+        <p class="card-desc">如果你是 FEniX 的粉絲，一定有過這樣的時刻——站在人群裡，看著台上的五個人，心裡想著：『好想被他們看見。』不是那種『萬人中的一個』的看見，而是那…</p>
+        <div class="card-footer">
+          <div class="card-user">
+            <span class="card-avatar">✨</span>
+            <span class="card-date">2026年3月2日</span>
+          </div>
+          <div class="card-meta">
+            
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ── 故事頁面 ── -->
 <div id="story-view">
-  
+  <div class="story-page" id="story-fenix-distance-moments" style="display:none">
+    <div class="story-page-inner">
+      <!-- ── Hero ── -->
+      <div class="story-hero story-hero--no-img">
+        
+        <div class="story-hero-content">
+          <div class="story-tags"><span class="tag">FEniX</span><span class="tag">粉絲互動</span><span class="tag">抽選合照</span><span class="tag">追星日常</span><span class="tag">被看見</span><span class="tag">情緒價值</span></div>
+          <h1 class="story-title">我們與 FEniX 的距離：那些讓你覺得『又近了一點』的瞬間</h1>
+          <p class="story-subtitle">從鹿港商演到台南跨年，從抽選合照到被記住名字——距離的消失，就藏在這些細節裡</p>
+          <div class="story-meta-row">
+            
+            
+            
+          </div>
+          <p class="cover-caption">沐光一日店長活動，峻廷抽中的那一刻——距離的消失，有時候就從一個名字開始</p>
+        </div>
+      </div>
+
+      <!-- ── Article Body ── -->
+      <div class="story-layout">
+        <!-- Floating sidebar (share) -->
+        <aside class="story-sidebar">
+          <button class="sidebar-btn" title="分享" onclick="navigator.clipboard?.writeText(location.href).then(()=>alert('連結已複製！'))">🔗</button>
+          <button class="sidebar-btn" title="返回列表" onclick="showIndex()">←</button>
+        </aside>
+
+        <article class="story-article">
+          <div class="story-body">
+            <section class="section-text"><p>如果你是 FEniX 的粉絲，一定有過這樣的時刻——</p><div class="para-break"></div><p>站在人群裡，看著台上的五個人，心裡想著：『好想被他們看見。』</p><div class="para-break"></div><p>不是那種『萬人中的一個』的看見，而是那種『他記得我』的看見。是峻廷在抽選時抽到你的名字，是承隆誇你『打扮用心』，是你準備上台時發現五個人在台上等著你。</p><div class="para-break"></div><p>距離的消失，不是靠得更近，而是**那一刻，你確定自己被看見了**。</p></section>
+<div class="story-divider"></div>
+<section class="section-moment">
+        <div class="moment-card-inner">
+          <div class="moment-tag"><span>距離的消失，有時候就從一個抽選開始</span></div>
+          <div class="moment-body"><p>『**謝謝峻廷抽到我喔ʕ •ᴥ•ʔ**』</p><div class="para-break"></div><p>這是沐光一日店長活動那天，當峻廷念出名字的那一刻。你知道那種感覺嗎？就是你一直默默祈禱，然後突然聽到自己的名字——不敢相信，但又真實得讓人想尖叫。</p><div class="para-break"></div><blockquote>沐光和FEniX的合照，謝謝峻廷抽到我喔ʕ •ᴥ•ʔ！那天也被隆隆誇了打扮用心🤘🏻總是給我滿滿情緒價值ㄉ人們❤️</blockquote><div class="para-break"></div><p>而更讓人感動的，是承隆注意到了打扮的細節。那些出門前多花的半小時、精心挑選的配件、想著『這樣他們會不會喜歡』的小心思——**被看見了**。</p><div class="para-break"></div><p>如果你也曾在抽選中被叫到名字，你一定懂那種心跳加速、不敢相信的感覺對吧？</p><div class="para-break"></div><p>## 粉絲故事</p></div>
+        </div>
+      </section>
+<div class="story-divider"></div>
+<section class="section-gallery"><h3 class="gallery-heading">而距離越來越近的另一個原因，是時間</h3><p>從鹿港商演到台南跨年，每一次見面都在累積『你認得我』的默契。</p><div class="para-break"></div><p>鹿港那場，是『**鳳凰剛起飛的時候**』。那時候的現場，可能沒有後來的大型舞台，可能只是一個小小的商演，但那些早期就在場的人，都有一種『我見證了你們起飛』的驕傲感。</p><div class="para-break"></div><blockquote>很ㄎㄧㄤ的一張照片，前期參加鹿港活動商演，好久了是鳳凰剛起飛的時候！從那時就一直陪著❤️</blockquote><div class="para-break"></div><p>『**從那時就一直陪著**』——這句話背後，是多少個早期商演、多少場地下活動、多少次『FEniX 還沒紅』的時刻。而當你看到他們站上 2025 台南跨年的大舞台，穿著帥到不行的舞台服，你會突然有種『我們一起走到這裡了』的感覺。</p><div class="para-break"></div><blockquote>衣服……很透_(´ཀ`」 ∠)_沒說沒注意一說嚇一跳，但真的超級帥餒這套25年台南跨年的服裝</blockquote><div class="para-break"></div><p>你有沒有這樣的經驗？從他們還沒紅就開始追，到現在每次見面都覺得『我見證了你們起飛』？</p></section>
+<div class="story-divider"></div>
+<section class="section-insight"><h3 class="insight-heading">為什麼『被看見』這麼重要？</h3><p>如果你問 FEniX 的粉絲，追星最打動你的是什麼？答案可能不是『唱得多好』或『跳得多帥』，而是**那些讓你覺得『他們記得我』的瞬間**。</p><div class="para-break"></div><p>根據本林行銷顧問報導，2025 年 1 月 18 日台中簽唱會，FEniX 與千名粉絲互動長達 12 小時，一路簽到凌晨 2 點。團員事後表示：『能夠陪伴粉絲這麼久，我們感覺很幸福。』</p><div class="para-break"></div><p>這種雙向的情感流動，是台灣偶像文化很獨特的地方。在粉絲社群中，每位成員都有專屬的暱稱：洋咩咩、潛廷寶、小石頭、臒侍、小隆包——這些名字背後，都是一段段陪伴的故事。</p><div class="para-break"></div><p>說真的，當你在人群裡被偶像認出來、被記住打扮的細節、被誇獎用心準備——那種感覺，真的很難不被感動。</p></section>
+<div class="story-divider"></div>
+<section class="section-moment">
+        <div class="moment-card-inner">
+          <div class="moment-tag"><span>有時候，距離的消失是一個意外的瞬間</span></div>
+          <div class="moment-body"><p>漫博那天，她準備上台，然後發現——**五個人這樣等著你**。</p><div class="para-break"></div><blockquote>準備上台就發現五個人這樣等著（？）其實也會緊張餒XDDD很幸運可以上台還帶了熊熊跟家齊合照🧸是非常非常幸福的一天！我愛漫博🥰</blockquote><div class="para-break"></div><p>這種時刻，不需要多說。每一個追星的人都懂——那種『我怎麼這麼幸運』的感覺，夾雜著緊張、興奮、還有一點不敢相信。</p><div class="para-break"></div><p>而那隻熊熊和家齊的合照，就這樣成為了『非常非常幸福的一天』的證明。</p></div>
+        </div>
+      </section>
+<div class="story-divider"></div>
+<section class="section-text"><h2 class="section-heading">抽選，是一種追星的儀式感</h2><p>『**希望今年也可以抽到拜託拜託宇宙保佑我也想跟鳳凰合照！！**』</p><div class="para-break"></div><p>抽選機制，對很多人來說，不只是一個『能不能中獎』的問題，而是一種**期待本身**。</p><div class="para-break"></div><p>每次活動前，粉絲們會在社群上許願、在 Dcard 上分享抽選心得、在 IG 限動發文祈禱。落選了，就說『下次一定要中』；中選了，就瘋狂感謝宇宙。這種『抽籤式追星』，反而讓每一次見面都變得更珍貴——因為你知道，不是每次都能這麼幸運。</p><div class="para-break"></div><p>而當你真的被抽中，當你真的站在他們面前，你會突然明白：**原來距離的消失，不是靠得更近，而是那一刻，你確定自己被看見了**。</p></section>
+<div class="story-divider"></div>
+<section class="section-text"><h2 class="section-heading">距離的消失</h2><p>從鹿港商演到台南跨年，從一日店長到簽唱會，從『鳳凰剛起飛』到首場 TICC 演唱會——</p><div class="para-break"></div><p>距離，其實一直在變化。</p><div class="para-break"></div><p>但那些讓你覺得『又近了一點』的瞬間，從來都不是物理距離，而是**那一刻，你確定自己被看見了**。是峻廷抽到你的名字，是承隆誇你打扮用心，是你上台時發現五個人在等著你。</p><div class="para-break"></div><p>這就是為什麼，你會一直陪著他們走下去。</p><div class="para-break"></div><p>**你有沒有這樣的時刻——那種讓你覺得『我跟他們的距離又近了一點』的瞬間？留言告訴我們 🥹**</p></section>
+          </div>
+          <footer class="story-footer">
+            
+            <div class="story-sources">
+          <h4>延伸閱讀</h4>
+          <a href="https://benlinmarketing.com/2025/01/20/fenixs25/" target="_blank" rel="noopener noreferrer">本林行銷顧問 - FEniX 粉絲互動紀錄</a>
+        </div>
+            
+          </footer>
+        </article>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-const STORY_IDS = [];
+const STORY_IDS = ["fenix-distance-moments"];
 
 function showIndex() {
   document.getElementById('index-view').style.display = '';
