@@ -1,7 +1,35 @@
 {
-  "generated_at": "2026-03-02T10:00:23.294Z",
-  "story_count": 13,
+  "generated_at": "2026-03-02T11:21:02.802Z",
+  "story_count": 14,
   "stories": [
+    {
+      "story_id": "chiikawa-taiwan-2026-h1",
+      "title": "吉伊卡哇攻台計畫：從快閃到常設，粉絲終於等到了",
+      "published_at": "2026-03-02T11:09:17.236Z",
+      "tags": [
+        "吉伊卡哇",
+        "CHIIKAWA",
+        "中山常設店",
+        "85度C",
+        "華山快閃",
+        "三麗鷗聯名",
+        "盲盒",
+        "小八貓"
+      ]
+    },
+    {
+      "story_id": "haikyu-merchandise-guide-2026-h1",
+      "title": "排球少年收藏熱：2026 上半年粉絲必搶周邊完全攻略",
+      "published_at": "2026-03-02T11:04:51.902Z",
+      "tags": [
+        "排球少年",
+        "周邊收藏",
+        "日清聯名",
+        "TCG卡牌",
+        "吉祥物",
+        "粉絲經濟"
+      ]
+    },
     {
       "story_id": "fenix-distance-moments",
       "title": "我們與 FEniX 的距離：那些讓你覺得『又近了一點』的瞬間",
@@ -53,18 +81,6 @@
       "title": "與 FEniX 一起的 2025：跨年、漫博、專輯，每個瞬間都是里程碑",
       "published_at": "2026-03-02T06:29:19.459Z",
       "tags": []
-    },
-    {
-      "story_id": "mirror-outside-phoenix",
-      "title": "鏡頭外的鳳凰：那些藏不住的真實瞬間",
-      "published_at": "2026-02-25T03:45:42.719Z",
-      "tags": [
-        "FEniX",
-        "成員互動",
-        "幕後花絮",
-        "真實個性",
-        "粉絲觀察"
-      ]
     },
     {
       "story_id": "seen-in-crowd",
