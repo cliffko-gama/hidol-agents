@@ -63,73 +63,28 @@ ${input.moments_summary.sample_texts.map((t, i) => `[${i + 1}] ${t.slice(0, 100)
 
 ---
 
-## Phase 1：Moment 話題信號分析（在搜尋前先完成）
-
-請先分析以下 Moment 素材，萃取「話題性信號」：
+## Moment 素材（用於 moment_trend_signals 分析）
 
 ${momentDataSection || `（素材摘要：${input.topic.richness} 豐富度，${momentCount} 則）`}
 
-分析重點：
-1. **關鍵字**：Moment 中反覆出現的詞彙、地名、人名、活動名稱
-2. **粉絲行為**：這批粉絲在做什麼？（排隊、手作應援、追星旅行、等待揭曉...）
-3. **情感主題**：主要情緒是什麼？（期待、感動、共鳴、遺憾、成就感...）
-4. **話題性因子**：為什麼這個主題值得寫成 Feature Story？它的 "共鳴點" 在哪？
+> 請從以上 Moment 素材中萃取關鍵字、粉絲行為、情感主題、話題性因子，
+> 填入最終 JSON 的 moment_trend_signals 欄位。
+> **不要先輸出分析文字，直接開始呼叫 web_search 工具。**
 
 ---
 
-## Phase 2：以信號驅動外部社群搜尋
+## 搜尋指引（請依序執行）
 
-使用 web_search 工具，依序執行以下搜尋（使用 Phase 1 萃取的關鍵字）：
-
-1. **核心搜尋**：「${input.topic.keywords.slice(0, 2).join(" ")} 粉絲 2025」
-2. **社群聲量**：「${input.topic.keywords[0]} Dcard」或「${input.topic.keywords[0]} PTT 討論」
-3. **文化背景**：搜尋這類粉絲行為的更廣趨勢（例如：台灣偶像見面會文化、粉絲應援文化）
-4. **延伸脈絡**：搜尋類似事件或現象，找到能讓文章有「普遍共鳴」的外部觀點
+1. 核心搜尋：「${input.topic.keywords.slice(0, 2).join(" ")} 粉絲 2025」
+2. 社群聲量：「${input.topic.keywords[0]} Dcard」或「${input.topic.keywords[0]} PTT 討論」
+3. 文化背景：搜尋這類粉絲行為的更廣趨勢（例：台灣偶像見面會文化、粉絲應援文化）
+4. 延伸脈絡：搜尋類似事件或現象，讓文章有「普遍共鳴」
 
 搜尋語言優先順序：${input.research_config?.languages?.join("、") ?? "繁體中文、英文"}
 
 ---
 
-## 輸出指示
-
-完成所有搜尋後，**直接輸出 JSON**，不要有任何前置說明或後記。
-
-輸出格式：
-\`\`\`json
-{
-  "moment_trend_signals": {
-    "keywords": ["關鍵字1", "關鍵字2"],
-    "fan_behaviors": ["具體行為描述1", "具體行為描述2"],
-    "emotional_themes": ["情感主題1", "情感主題2"],
-    "trending_factor": "一句話說明這個主題為什麼有共鳴"
-  },
-  "web_trends": [
-    {
-      "title": "文章標題",
-      "source": "媒體名稱",
-      "url": "真實搜尋到的 URL（禁止 example.com）",
-      "summary": "50-100 字摘要",
-      "published_at": "ISO 日期（若可知）",
-      "relevance": "high 或 medium"
-    }
-  ],
-  "social_insights": [
-    {
-      "platform": "平台名稱",
-      "trend_description": "該平台上的具體討論描述",
-      "sample_content": "代表性討論內容",
-      "estimated_buzz": "viral / trending / moderate / niche"
-    }
-  ],
-  "suggested_angles": [
-    "切入角度1：說明理由",
-    "切入角度2：說明理由"
-  ],
-  "context_summary": "300-500 字。整合 Moment 話題信號與外部社群脈絡，讓撰稿者能直接轉化為文章段落。必須具體描述：粉絲的真實行為與情感、外部趨勢驗證、值得深挖的觀點。"
-}
-\`\`\`
-
-⚠️ URL 規則：web_trends 只放 web_search 搜尋到的真實 URL，找不到就保持空陣列 []。
+⚠️ 完成所有搜尋後，直接輸出 JSON（從 { 開頭，不要任何前置文字）。
 `.trim();
 
   const response = await callAgentAgentic({
