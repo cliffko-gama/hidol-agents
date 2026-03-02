@@ -26,31 +26,27 @@ export async function runAgentC(input: AgentCInput): Promise<AgentCOutput> {
     .join("\n\n");
 
   // 建構「結構化 Moment 區塊」——每個 Moment 有獨立標籤，防止 Agent C 張冠李戴
+  // 限制每個 Moment 的文字長度，避免單一請求超過 30k TPM 上限
+  const TEXT_LIMIT = 250;
   const momentSections = input.moments
     .map((m) => {
+      // 只取第一個媒體素材（減少 token）
       const mediaInfo =
         m.media.length > 0
-          ? m.media
-              .map(
-                (med, idx) =>
-                  `  • [media_index: ${idx}] 類型: ${med.type}` +
-                  (med.alt_text ? `，描述: ${med.alt_text}` : "") +
-                  (med.url ? `，URL: ${med.url}` : "")
-              )
-              .join("\n")
+          ? `  • [media_index: 0] 類型: ${m.media[0].type}` +
+            (m.media[0].alt_text ? `，描述: ${m.media[0].alt_text.slice(0, 60)}` : "") +
+            (m.media[0].url ? `，URL: ${m.media[0].url}` : "")
           : "  • （此 Moment 無媒體素材）";
+      const text = m.text_content.length > TEXT_LIMIT
+        ? m.text_content.slice(0, TEXT_LIMIT) + "…（略）"
+        : m.text_content;
       return (
-        `### ═══ [${m.id}] ${m.user_display_name} 的 Moment ═══\n` +
-        `- **⚠️ Moment ID（引用時必須填入此值）**: \`${m.id}\`\n` +
-        `- **用戶顯示名稱**: ${m.user_display_name}\n` +
-        `- **發文時間**: ${m.created_at}\n` +
-        (m.location ? `- **地點**: ${m.location.name}\n` : "") +
-        `- **Hashtag**: ${m.hashtags.length > 0 ? m.hashtags.map((h) => `#${h}`).join(" ") : "（無）"}\n` +
-        `- **互動數據**: 👍 ${m.engagement.likes} 讚 / 💬 ${m.engagement.comments} 留言 / 🔁 ${m.engagement.shares} 分享\n` +
-        `- **用戶原文（只能引用這段文字的內容）**:\n` +
-        `  > ${m.text_content.replace(/\n/g, "\n  > ")}\n` +
-        `- **媒體素材**（共 ${m.media.length} 個，media_index 從 0 開始）:\n` +
-        mediaInfo
+        `### [${m.id}] ${m.user_display_name} 的 Moment\n` +
+        `- **Moment ID**: \`${m.id}\`\n` +
+        `- **互動數據**: 👍 ${m.engagement.likes} 讚\n` +
+        `- **原文**:\n` +
+        `  > ${text.replace(/\n/g, "\n  > ")}\n` +
+        `- **媒體**: ${mediaInfo}`
       );
     })
     .join("\n\n");

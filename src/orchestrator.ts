@@ -216,8 +216,14 @@ export async function runPipeline(
 
     // --- Agent C + D: 撰寫 + 審核 feedback loop ---
     console.log("\n--- Stage 4-5: 撰寫 + 審核 ---\n");
-    console.log("[Rate Limit] 等待 30 秒避免超過 TPM 上限...");
-    await sleep(30_000);
+    console.log("[Rate Limit] 等待 60 秒避免超過 TPM 上限...");
+    await sleep(60_000);
+
+    // 只傳 top 5 Moments（按 likes 排序），減少 Agent C 的 input tokens
+    const top5Moments = [...topicMoments]
+      .sort((a, b) => (b.engagement?.likes ?? 0) - (a.engagement?.likes ?? 0))
+      .slice(0, 5);
+    console.log(`[Moments] 使用前 ${top5Moments.length} 則高互動 Moment（共 ${topicMoments.length} 則）`);
 
     let story: FeatureStory | null = null;
     let revisions = 0;
@@ -229,7 +235,7 @@ export async function runPipeline(
       try {
         cResult = await runAgentC({
           topic,
-          moments: topicMoments,
+          moments: top5Moments,
           research: bResult,
           editorial_guidelines: config.quality.editorial_guidelines,
           revision_feedback: lastReviewFeedback,
