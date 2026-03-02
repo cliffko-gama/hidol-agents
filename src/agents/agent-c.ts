@@ -21,9 +21,31 @@ export async function runAgentC(input: AgentCInput): Promise<AgentCOutput> {
   );
 
   // 建構「允許的來源清單」——明確列出 URL，方便 Agent C 直接複製使用
+  const allowedUrls = new Set(input.research.web_trends.map((t) => t.url));
   const allowedSourcesList = input.research.web_trends
     .map((t, i) => `${i + 1}. 來源名稱: ${t.source}\n   URL: ${t.url}\n   標題: ${t.title}\n   摘要: ${t.summary}`)
     .join("\n\n");
+
+  // 當 web_trends 為空時，顯示明確警告（避免 Agent C 捏造 URL）
+  const allowedSourcesBlock = allowedUrls.size > 0
+    ? `## ⚠️ 允許引用的外部來源（只能用這些，不能自己編）
+
+以下是 research 階段找到的所有來源。你的 referenced_sources 只能從這些 URL 中選用。
+提及媒體時，使用下方列出的「來源名稱」。引用數據時，只能引用下方「摘要」中出現的數據。
+
+${allowedSourcesList}
+
+社群洞察（可用來補充觀點，但無 URL）：
+${input.research.social_insights.map((s) => `- [${s.platform}] ${s.trend_description}`).join("\n")}`
+    : `## ⚠️ 本次研究無可引用的外部來源
+
+**Agent B 本次未找到任何外部文章。referenced_sources 必須為空陣列 []。**
+
+你可以用「社群上有人觀察到...」「Dcard 上有粉絲分享...」等方式描述社群趨勢，
+但**絕對不可以引用任何 URL**，包括虛構的或你認為合理的 URL。
+
+社群洞察（可用來補充觀點，但無 URL）：
+${input.research.social_insights.map((s) => `- [${s.platform}] ${s.trend_description}`).join("\n")}`;
 
   // 建構「結構化 Moment 區塊」——每個 Moment 有獨立標籤，防止 Agent C 張冠李戴
   // 限制每個 Moment 的文字長度，避免單一請求超過 30k TPM 上限
@@ -111,20 +133,12 @@ ${input.research.context_summary}
 建議切入角度：
 ${input.research.suggested_angles.map((a, i) => `${i + 1}. ${a}`).join("\n")}
 
-## ⚠️ 允許引用的外部來源（只能用這些，不能自己編）
-
-以下是 research 階段找到的所有來源。你的 referenced_sources 只能從這些 URL 中選用。
-提及媒體時，使用下方列出的「來源名稱」。引用數據時，只能引用下方「摘要」中出現的數據。
-
-${allowedSourcesList}
-
-社群洞察（可用來補充觀點，但無 URL）：
-${input.research.social_insights.map((s) => `- [${s.platform}] ${s.trend_description}`).join("\n")}
+${allowedSourcesBlock}
 
 ---
 
 請撰寫 Feature Story 並輸出 JSON 格式。
-記住：referenced_sources 中的每個 URL 都必須完全來自上方「允許引用的外部來源」清單。
+記住：referenced_sources 中的每個 URL 都必須完全來自上方「允許引用的外部來源」清單。若無來源，referenced_sources 必須為 []。
 `;
 
   // JSON retry: 如果解析失敗，自動重試最多 1 次
@@ -156,6 +170,14 @@ ${input.research.social_insights.map((s) => `- [${s.platform}] ${s.trend_descrip
 
   if (!result) {
     throw lastError ?? new Error("Agent C failed to produce valid JSON");
+  }
+
+  // ── 後處理：過濾掉不在 allowedUrls 中的 URL（防止 Agent C 捏造來源）──
+  const originalSources = result.feature_story.referenced_sources ?? [];
+  result.feature_story.referenced_sources = originalSources.filter((url) => allowedUrls.has(url));
+  const removedCount = originalSources.length - result.feature_story.referenced_sources.length;
+  if (removedCount > 0) {
+    console.warn(`[Agent C] ⚠️ 過濾掉 ${removedCount} 個不允許的 URL（防止捏造來源）`);
   }
 
   console.log(
