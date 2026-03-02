@@ -5,6 +5,44 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getClient } from "./client.js";
 
+/**
+ * 自動重試包裝器：處理 overloaded_error 與 529 暫時性錯誤
+ * 使用指數退避（5s → 15s → 45s），最多重試 3 次
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  label: string,
+  maxRetries = 3
+): Promise<T> {
+  const delays = [5_000, 15_000, 45_000];
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const isOverloaded =
+        (err instanceof Error &&
+          (err.message.includes("overloaded") ||
+           err.message.includes("529") ||
+           (err as { status?: number }).status === 529)) ||
+        (typeof err === "object" &&
+          err !== null &&
+          (err as { error?: { type?: string } }).error?.type === "overloaded_error");
+
+      if (isOverloaded && attempt < maxRetries) {
+        const waitMs = delays[attempt] ?? 45_000;
+        console.warn(
+          `[Retry] ${label} → overloaded，${waitMs / 1000}s 後重試 (${attempt + 1}/${maxRetries})...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+        continue;
+      }
+      throw err;
+    }
+  }
+  // TypeScript 要求：實際上不會跑到這裡
+  throw new Error(`[Retry] ${label} 超過重試上限`);
+}
+
 export interface AgentCallOptions {
   model: string;
   systemPrompt: string;
@@ -33,15 +71,17 @@ export async function callAgent(options: AgentCallOptions): Promise<string> {
   const { model, systemPrompt, userMessage, maxTokens = 8192, tools } = options;
 
   // Use streaming with finalMessage() to avoid timeouts on large responses
-  const stream = client.messages.stream({
-    model,
-    max_tokens: maxTokens,
-    system: systemPrompt,
-    messages: [{ role: "user", content: userMessage }],
-    ...(tools ? { tools } : {}),
-  });
-
-  const response = await stream.finalMessage();
+  // Wrap with retry to handle transient overloaded_error (529)
+  const response = await withRetry(async () => {
+    const stream = client.messages.stream({
+      model,
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userMessage }],
+      ...(tools ? { tools } : {}),
+    });
+    return stream.finalMessage();
+  }, `callAgent(${model})`);
 
   // Extract text from response
   const textBlock = response.content.find(
@@ -85,13 +125,18 @@ export async function callAgentAgentic(
   ];
 
   for (let round = 0; round < maxRounds; round++) {
-    const response = await (client.messages.create as Function)({
-      model,
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      ...(tools.length > 0 ? { tools } : {}),
-      messages,
-    }) as Anthropic.Messages.Message;
+    // Wrap each round with retry to handle transient overloaded_error (529)
+    const response = await withRetry(
+      () =>
+        (client.messages.create as Function)({
+          model,
+          max_tokens: maxTokens,
+          system: systemPrompt,
+          ...(tools.length > 0 ? { tools } : {}),
+          messages,
+        }) as Promise<Anthropic.Messages.Message>,
+      `callAgentAgentic(${model}) round=${round + 1}`
+    );
 
     if (response.stop_reason === "end_turn") {
       const textBlock = response.content.find(
