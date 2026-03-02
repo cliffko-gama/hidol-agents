@@ -19,7 +19,7 @@ async function main() {
 
     filter: {
       min_text_length: 10,
-      min_engagement: 20,
+      min_engagement: 0,  // 原始資料無 engagement 數據，設為 0
       excluded_hashtags: ["特賣", "限時"],
     },
 
