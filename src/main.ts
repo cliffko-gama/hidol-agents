@@ -24,7 +24,7 @@ async function main() {
     },
 
     clustering: {
-      max_topics: 2,
+      max_topics: 1,  // Rate limit 較低時先跑 1 篇，升級方案後可改回 2
     },
 
     research: {

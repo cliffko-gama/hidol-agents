@@ -22,6 +22,9 @@ import type { PipelineConfig, PipelineResult, PipelineError } from "./types/pipe
 
 import type { ExtractionInput } from "./types/lessons.js";
 
+/** Rate limit 緩衝：在 API 呼叫之間等待，避免超過 30k TPM 上限 */
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 import { runAgentA1 } from "./agents/agent-a1.js";
 import { runAgentA2 } from "./agents/agent-a2.js";
 import { runAgentB } from "./agents/agent-b.js";
@@ -161,6 +164,8 @@ export async function runPipeline(
 
     // --- Agent B: 趨勢研究 ---
     console.log("--- Stage 3: 趨勢研究 ---\n");
+    console.log("[Rate Limit] 等待 20 秒避免超過 TPM 上限...");
+    await sleep(20_000);
 
     // 計算 moments 摘要，提供給 Agent B 判斷素材豐富度以決定搜尋深度
     const avgTextLength =
@@ -211,6 +216,8 @@ export async function runPipeline(
 
     // --- Agent C + D: 撰寫 + 審核 feedback loop ---
     console.log("\n--- Stage 4-5: 撰寫 + 審核 ---\n");
+    console.log("[Rate Limit] 等待 30 秒避免超過 TPM 上限...");
+    await sleep(30_000);
 
     let story: FeatureStory | null = null;
     let revisions = 0;
