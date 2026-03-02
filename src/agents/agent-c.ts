@@ -87,7 +87,19 @@ ${trendSignalsBlock}
 - 目標讀者: ${input.editorial_guidelines.target_audience}
 - Do's: ${input.editorial_guidelines.style_dos.join(" / ")}
 - Don'ts: ${input.editorial_guidelines.style_donts.join(" / ")}
+${
+  input.editorial_guidelines.example_articles?.length
+    ? `
+## 📖 優質文章範例（請模仿這些文章的語氣、節奏和 Theme Spine 運用方式）
 
+${input.editorial_guidelines.example_articles
+  .map((article, i) => `### 範例 ${i + 1}\n\n${article}`)
+  .join("\n\n---\n\n")}
+
+---
+`
+    : ""
+}
 ## Moment 素材（共 ${input.moments.length} 個）
 ⚠️ **重要：每個 Moment 有獨立的 ID 和用戶，引用時 moment_id 必須填寫對應區塊的 ID，不可將不同 Moment 的文字混用。**
 

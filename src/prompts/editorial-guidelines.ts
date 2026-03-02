@@ -6,6 +6,7 @@
  */
 
 import type { EditorialGuidelines } from "../types";
+import { EXAMPLE_ARTICLES } from "../fixtures/example-articles.js";
 
 export const HIDOL_EDITORIAL_GUIDELINES: EditorialGuidelines = {
   tone: `
@@ -57,18 +58,9 @@ Z 世代（18-28 歲為主），對潮流文化和偶像文化有感的年輕人
     "不要自行編造不存在的外部來源 URL 或統計數字",
   ],
 
-  example_articles: [
-    // 範例開場（粉絲共鳴模式）：
-    // 「如果你是 FEniX 的粉，一定有過這樣的時刻——螢幕上跳出『恭喜中籤』，
-    //   心臟被狠狠撞了一下。這篇文章記錄的，就是那些幸運瞬間。」
-
-    // 範例互動結尾：
-    // 「你有沒有這樣的追星幸運瞬間呢？那個被抽到、被看見、被記住的瞬間——
-    //   留言告訴我們 🥹 我們想聽你的故事。」
-
-    // 範例 trend_context 段落（口語化版本）：
-    // 「社群上有人觀察到，現在粉絲最愛截圖的不是官拍，而是幕後花絮。
-    //   不是因為官拍不好看，而是幕後那種「沒有防備的真實」更讓人有感。
-    //   你說這是不是很有道理？」
-  ],
+  // 從 src/fixtures/example-articles.ts 載入範例文章，格式化成 string[]
+  // 每篇：「標題\n\n副標題\n\n全文」
+  example_articles: EXAMPLE_ARTICLES.map((a) =>
+    [a.title, a.subtitle, a.content].filter(Boolean).join("\n\n")
+  ),
 };

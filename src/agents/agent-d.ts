@@ -42,8 +42,24 @@ ${input.research.social_insights.map((s) => `- [${s.platform}] ${s.trend_descrip
 - 目標讀者: ${input.editorial_guidelines.target_audience}
 - Do's: ${input.editorial_guidelines.style_dos.join(" / ")}
 - Don'ts: ${input.editorial_guidelines.style_donts.join(" / ")}
-${input.lessons_context ? "\n" + input.lessons_context : ""}
+${
+  input.editorial_guidelines.example_articles?.length
+    ? `
+## 📖 品質基準範例（以這些文章的水準作為評分參考）
+
+> 評分時，請思考「這篇待審文章與範例相比，差距在哪？」
+
+${input.editorial_guidelines.example_articles
+  // Agent D 只取第一篇範例避免超 token
+  .slice(0, 1)
+  .map((article, i) => `### 範例 ${i + 1}\n\n${article}`)
+  .join("\n\n---\n\n")}
+
 ---
+`
+    : ""
+}
+${input.lessons_context ? input.lessons_context + "\n---\n" : ""}
 
 請進行五維度審核並輸出結果 JSON。
 `;
