@@ -51,9 +51,32 @@ export async function runAgentC(input: AgentCInput): Promise<AgentCOutput> {
     })
     .join("\n\n");
 
+  // 建構 moment_trend_signals 區塊（Agent B 萃取的話題性信號）
+  const signals = input.research.moment_trend_signals;
+  const trendSignalsBlock = signals
+    ? `## 🎯 話題性信號（Agent B 分析結果，請用來決定 Theme Spine）
+
+**核心話題因子（trending_factor）**：
+${signals.trending_factor}
+
+**關鍵字**：${signals.keywords.join("、")}
+
+**粉絲行為模式**：
+${signals.fan_behaviors.map((b) => `- ${b}`).join("\n")}
+
+**情感主題**：
+${signals.emotional_themes.map((t) => `- ${t}`).join("\n")}
+
+> ⚠️ 請以 trending_factor 和 emotional_themes 為核心，
+> 選定你的 Theme Spine，並在 intro 的前 2 句就點出它。
+
+`
+    : "";
+
   const userMessage = `
 ${isRevision ? "## ⚠️ 修改模式\n\n這是第 " + input.attempt_number + " 次撰寫。請根據以下審稿意見進行修改：\n\n" + input.revision_feedback + "\n\n---\n" : ""}
 ${input.lessons_context ? input.lessons_context + "\n---\n" : ""}
+${trendSignalsBlock}
 ## 主題資訊
 - 標題: ${input.topic.title}
 - 描述: ${input.topic.description}
