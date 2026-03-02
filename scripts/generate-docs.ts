@@ -109,57 +109,110 @@ interface ParsedStory {
 }
 
 // ─────────────────────────────────────────────────────────
-// 1. 掃描 output/ 找所有已發佈故事
+// 1. 掃描 output/ 找所有已發佈故事，並從 docs/stories/ 補充歷史故事
 // ─────────────────────────────────────────────────────────
 
 function collectStories(): ParsedStory[] {
-  if (!fs.existsSync(OUTPUT_DIR)) {
-    console.log("⚠️  output/ 目錄不存在，請先執行 pipeline。");
-    return [];
-  }
-
   const storiesMap = new Map<string, ParsedStory>(); // story_id → latest
 
-  // 找所有 run-* 子目錄
-  const entries = fs.readdirSync(OUTPUT_DIR, { withFileTypes: true });
-  const runDirs = entries
-    .filter((e) => e.isDirectory() && e.name.startsWith("run-"))
-    .map((e) => e.name)
-    .sort(); // 按時間排序，後面的覆蓋前面的
+  // ── Step 1：從 output/ 收集當前 run 的故事 ──
+  if (fs.existsSync(OUTPUT_DIR)) {
+    // 找所有 run-* 子目錄
+    const entries = fs.readdirSync(OUTPUT_DIR, { withFileTypes: true });
+    const runDirs = entries
+      .filter((e) => e.isDirectory() && e.name.startsWith("run-"))
+      .map((e) => e.name)
+      .sort(); // 按時間排序，後面的覆蓋前面的
 
-  for (const runDir of runDirs) {
-    const runPath = path.join(OUTPUT_DIR, runDir);
-    const runFiles = fs.readdirSync(runPath);
+    for (const runDir of runDirs) {
+      const runPath = path.join(OUTPUT_DIR, runDir);
+      const runFiles = fs.readdirSync(runPath);
 
-    // 找所有 Agent E publish 檔案
-    const publishFiles = runFiles.filter((f) =>
-      f.match(/^06-topic-\d+-agent-e-publish\.json$/)
-    );
+      // 找所有 Agent E publish 檔案
+      const publishFiles = runFiles.filter((f) =>
+        f.match(/^06-topic-\d+-agent-e-publish\.json$/)
+      );
 
-    for (const file of publishFiles) {
+      for (const file of publishFiles) {
+        try {
+          const raw = fs.readFileSync(path.join(runPath, file), "utf-8");
+          const eOutput = JSON.parse(raw) as {
+            story_meta: StoryMeta;
+            generated_files: Array<{ path: string; content: string; action: string }>;
+          };
+
+          // 找故事 JSON（通常是 generated_files[0]，path 含 stories/）
+          const storyFile = eOutput.generated_files.find(
+            (f) => f.path.includes("stories/") && f.path.endsWith(".json") && !f.path.endsWith("stories.json")
+          );
+
+          if (!storyFile) continue;
+
+          const storyContent = JSON.parse(storyFile.content) as StoryJSON;
+
+          storiesMap.set(eOutput.story_meta.story_id, {
+            meta: eOutput.story_meta,
+            content: storyContent,
+            runId: runDir,
+          });
+        } catch (err) {
+          console.warn(`  ⚠️  無法解析 ${runDir}/${file}:`, (err as Error).message);
+        }
+      }
+    }
+  } else {
+    console.log("⚠️  output/ 目錄不存在，將從 docs/stories/ 載入歷史故事。");
+  }
+
+  // ── Step 2：從 docs/stories/ 補充歷史故事（不覆蓋 output/ 已有的版本）──
+  // 這樣即使 GitHub Actions 每次都從空的 output/ 開始，也能累積所有故事
+  if (fs.existsSync(DOCS_STORIES_DIR)) {
+    const storyFiles = fs
+      .readdirSync(DOCS_STORIES_DIR)
+      .filter((f) => f.endsWith(".json") && f !== "stories.json");
+
+    for (const file of storyFiles) {
+      const storyId = file.replace(/\.json$/, "");
+      if (storiesMap.has(storyId)) continue; // output/ 版本優先，跳過
+
       try {
-        const raw = fs.readFileSync(path.join(runPath, file), "utf-8");
-        const eOutput = JSON.parse(raw) as {
-          story_meta: StoryMeta;
-          generated_files: Array<{ path: string; content: string; action: string }>;
+        const raw = fs.readFileSync(path.join(DOCS_STORIES_DIR, file), "utf-8");
+        const storyContent = JSON.parse(raw) as StoryJSON;
+
+        // 從 StoryJSON 重建 StoryMeta
+        const coverUrl =
+          storyContent.meta?.og_image ?? storyContent.header?.cover?.url ?? "";
+        const fanCount = Array.isArray(storyContent.footer?.contributing_fans)
+          ? storyContent.footer.contributing_fans.length
+          : undefined;
+
+        // 從 sections 統計 moment 數量
+        let momentCount = 0;
+        for (const section of storyContent.sections ?? []) {
+          if (Array.isArray(section.moments)) {
+            momentCount += (section.moments as SectionMoment[]).length;
+          }
+        }
+
+        const meta: StoryMeta = {
+          story_id: storyId,
+          title: storyContent.header?.title ?? storyContent.meta?.title ?? storyId,
+          published_at: storyContent.meta?.published_at ?? new Date().toISOString(),
+          url: `#/story/${storyId}`,
+          cover_image_url: coverUrl,
+          tags: storyContent.footer?.tags,
+          reading_time_minutes: storyContent.meta?.reading_time_minutes,
+          contributing_fans: fanCount,
+          moment_count: momentCount > 0 ? momentCount : undefined,
         };
 
-        // 找故事 JSON（通常是 generated_files[0]，path 含 stories/）
-        const storyFile = eOutput.generated_files.find(
-          (f) => f.path.includes("stories/") && f.path.endsWith(".json") && !f.path.endsWith("stories.json")
-        );
-
-        if (!storyFile) continue;
-
-        const storyContent = JSON.parse(storyFile.content) as StoryJSON;
-
-        storiesMap.set(eOutput.story_meta.story_id, {
-          meta: eOutput.story_meta,
+        storiesMap.set(storyId, {
+          meta,
           content: storyContent,
-          runId: runDir,
+          runId: "archived",
         });
       } catch (err) {
-        console.warn(`  ⚠️  無法解析 ${runDir}/${file}:`, (err as Error).message);
+        console.warn(`  ⚠️  無法解析 docs/stories/${file}:`, (err as Error).message);
       }
     }
   }
@@ -1037,10 +1090,10 @@ function main(): void {
   fs.mkdirSync(DOCS_DIR, { recursive: true });
   fs.mkdirSync(DOCS_STORIES_DIR, { recursive: true });
 
-  // 收集故事
-  console.log(`🔍 掃描 ${OUTPUT_DIR} ...`);
+  // 收集故事（output/ 當前 run + docs/stories/ 歷史累積）
+  console.log(`🔍 掃描 output/ 與 docs/stories/ ...`);
   const stories = collectStories();
-  console.log(`   找到 ${stories.length} 篇已發佈故事`);
+  console.log(`   找到 ${stories.length} 篇故事（含歷史累積）`);
 
   if (stories.length === 0) {
     console.log("\n⚠️  沒有找到故事，生成空的首頁。");
