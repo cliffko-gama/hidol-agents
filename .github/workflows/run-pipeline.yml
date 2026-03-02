@@ -94,6 +94,7 @@ jobs:
             STORY_COUNT=$(find docs/stories -name "*.json" 2>/dev/null | wc -l | tr -d ' ')
             TRIGGER="${{ github.event_name }}"
             git commit -m "deploy: update ${STORY_COUNT} stories (${TRIGGER}) [skip ci]"
+            git pull --rebase origin main
             git push
             echo "✅ docs/ 已成功更新並推送"
           fi
