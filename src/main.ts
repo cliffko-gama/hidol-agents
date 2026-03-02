@@ -4,7 +4,7 @@
  * 使用模擬資料執行 end-to-end pipeline。
  */
 
-import { MOCK_MOMENTS } from "./fixtures/mock-moments.js";
+import { TAIWAN_IDOL_MOMENTS } from "./fixtures/prod-moments-taiwan-idol.js";
 import { HIDOL_EDITORIAL_GUIDELINES } from "./prompts/editorial-guidelines.js";
 import { runPipeline } from "./orchestrator.js";
 import type { PipelineConfig } from "./types/pipeline.js";
@@ -50,10 +50,10 @@ async function main() {
   };
 
   console.log("🚀 hidol Feature Story Pipeline POC\n");
-  console.log(`使用 ${MOCK_MOMENTS.length} 則模擬 Moment 資料`);
+  console.log(`使用 ${TAIWAN_IDOL_MOMENTS.length} 則台灣偶像真實 Moment 資料`);
 
   const outputDir = path.resolve("output");
-  const result = await runPipeline(MOCK_MOMENTS, config, outputDir);
+  const result = await runPipeline(TAIWAN_IDOL_MOMENTS, config, outputDir);
 
   // Print result summary
   console.log("\n========================================");
