@@ -45,8 +45,17 @@ import {
   getTopicCheckpoint,
   upsertTopicCheckpoint,
 } from "./lib/checkpoint.js";
+import {
+  loadStoryHistory,
+  saveStoryHistory,
+  appendPublishedStories,
+  getRecentStoryTitles,
+} from "./lib/story-history.js";
 import fs from "fs";
 import path from "path";
+
+/** 同一主題在此天數內發佈過 → Agent A2 不會重複選題；超過後自動解鎖 */
+const DEDUP_COOLDOWN_DAYS = 60;
 
 /** 儲存中間產物到指定目錄 */
 function saveArtifact(outputDir: string, filename: string, data: unknown) {
@@ -86,6 +95,19 @@ export async function runPipeline(
   const cachedTopics = checkpoint?.topics.filter((t) => t.published_meta).map((t) => t.title) ?? [];
   if (cachedTopics.length > 0) {
     console.log(`[Checkpoint] 發現 ${cachedTopics.length} 個已發佈主題，可跳過：${cachedTopics.join("、")}`);
+  }
+
+  // 跨 run 去重：載入發佈歷史，取出冷卻期內的主題標題
+  const storyHistory = outputDir ? loadStoryHistory(outputDir) : null;
+  const recentTitles = storyHistory
+    ? getRecentStoryTitles(storyHistory, DEDUP_COOLDOWN_DAYS)
+    : [];
+  if (recentTitles.length > 0) {
+    console.log(
+      `[StoryHistory] 最近 ${DEDUP_COOLDOWN_DAYS} 天內已發佈 ${recentTitles.length} 個主題（Agent A2 將避開）：${recentTitles.join("、")}`
+    );
+  } else if (storyHistory) {
+    console.log(`[StoryHistory] 歷史記錄：累計 ${storyHistory.stories.length} 篇（無冷卻中主題）`);
   }
 
   console.log("\n========================================");
@@ -138,7 +160,11 @@ export async function runPipeline(
   try {
     a2Result = await runAgentA2({
       filtered_moments: a1Result.filtered_moments,
-      existing_topic_titles: config.clustering.existing_topic_titles,
+      // 合併：冷卻期內的歷史主題 + config 手動指定的禁止清單
+      existing_topic_titles: [
+        ...recentTitles,
+        ...(config.clustering.existing_topic_titles ?? []),
+      ],
       max_topics: config.clustering.max_topics,
     });
   } catch (err) {
@@ -404,7 +430,12 @@ export async function runPipeline(
         feature_story: story,
         moments: topicMoments,
         site_config: config.publish.site_config,
-        existing_stories: [...(config.publish.existing_stories ?? []), ...publishedStories],
+        // 歷史全量 + config 手動清單 + 本次 run 已發佈（讓 Agent E 知道整個 site 現有文章）
+        existing_stories: [
+          ...(storyHistory?.stories ?? []),
+          ...(config.publish.existing_stories ?? []),
+          ...publishedStories,
+        ],
       });
 
       publishedStories.push(eResult.story_meta);
@@ -436,6 +467,18 @@ export async function runPipeline(
         retryable: true,
       });
     }
+  }
+
+  // ============================================================
+  // 跨 run 去重：將本次發佈的 story 存入歷史記錄
+  // ============================================================
+  if (outputDir && storyHistory && publishedStories.length > 0) {
+    const updatedHistory = appendPublishedStories(storyHistory, publishedStories);
+    saveStoryHistory(outputDir, updatedHistory);
+    console.log(
+      `\n[StoryHistory] 💾 新增 ${publishedStories.length} 篇至歷史記錄` +
+      `（累計 ${updatedHistory.stories.length} 篇，共 ${updatedHistory.total_runs} 次 run）`
+    );
   }
 
   // ============================================================
