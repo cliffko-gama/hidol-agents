@@ -95,9 +95,62 @@ ${signals.emotional_themes.map((t) => `- ${t}`).join("\n")}
 `
     : "";
 
+  // ── 動態注入區塊 1：稀薄素材策略（< 6 個 Moment 時才出現）──
+  const sparseContentBlock =
+    input.moments.length < 6
+      ? `## 📌 稀薄素材模式（本次只有 ${input.moments.length} 個 Moment）
+
+**文章結構調整**：
+- 減少 moment_highlight 段落（最多 2 個），避免同一素材反覆出現
+- 多用 trend_context 和 analysis 段落：以外部研究和社群觀察補充深度
+- 策略是「深挖 1-2 個 Moment」，而非「強行廣鋪」
+
+**讓每個 Moment 發揮最大作用**：
+- 不只是「引用」，而是帶讀者「進入」那個 Moment 的情境
+- 補充該瞬間的背景意義（粉絲文化脈絡、活動氛圍等）
+- 用趨勢研究的角度，讓這 ${input.moments.length} 個 Moment 代表更大的現象
+
+**建議結構**：
+intro → moment_highlight（深挖）→ trend_context → trend_context/analysis → moment_highlight（收尾）→ conclusion
+
+---
+`
+      : "";
+
+  // ── 動態注入區塊 2：完整修改指引（isRevision 時才出現）──
+  const revisionBlock = isRevision
+    ? `## ⚠️ 修改模式（第 ${input.attempt_number} 次）
+
+**本次審稿意見**：
+
+${input.revision_feedback}
+
+---
+
+**修改指引**：
+
+1. **針對性修改，不要大幅重寫**
+   - 仔細閱讀上方審稿意見，只修改被指出的問題
+   - 沒有被提到的段落，原則上保留（除非與修改內容有邏輯連動）
+
+2. **維持 Theme Spine 一致性**
+   - 確認你原本確定的 Theme Spine 在修改後仍然貫穿全文
+   - 如果審稿意見要求調整角度，intro 的前 2 句也要同步更新
+
+3. **保留好的部分**
+   - 如果某段沒有被批評，保留它
+   - 修改是精進，不是全部推倒重來
+
+4. **先整體思考再動手**
+   - 讀完所有審稿意見後，想好整體修改方向
+   - 不要邊讀邊改，容易顧此失彼
+
+---
+`
+    : "";
+
   const userMessage = `
-${isRevision ? "## ⚠️ 修改模式\n\n這是第 " + input.attempt_number + " 次撰寫。請根據以下審稿意見進行修改：\n\n" + input.revision_feedback + "\n\n---\n" : ""}
-${input.lessons_context ? input.lessons_context + "\n---\n" : ""}
+${revisionBlock}${input.lessons_context ? input.lessons_context + "\n---\n" : ""}${sparseContentBlock}
 ${trendSignalsBlock}
 ## 主題資訊
 - 標題: ${input.topic.title}
