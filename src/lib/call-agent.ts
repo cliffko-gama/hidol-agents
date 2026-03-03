@@ -4,34 +4,48 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { getClient } from "./client.js";
+import { tokenTracker } from "./token-tracker.js";
 
 /**
- * 自動重試包裝器：處理 overloaded_error 與 529 暫時性錯誤
- * 使用指數退避（5s → 15s → 45s），最多重試 3 次
+ * 自動重試包裝器：處理 429 Rate Limit 及 529 overloaded 暫時性錯誤
+ *
+ * - 529 (overloaded)：指數退避 5s → 15s → 45s
+ * - 429 (rate_limit)：較長退避 30s → 60s → 120s（等待 TPM 視窗恢復）
+ * - 最多重試 3 次（maxRetries 可覆寫）
  */
 async function withRetry<T>(
   fn: () => Promise<T>,
   label: string,
   maxRetries = 3
 ): Promise<T> {
-  const delays = [5_000, 15_000, 45_000];
+  const overloadedDelays = [5_000, 15_000, 45_000];
+  const rateLimitDelays = [30_000, 60_000, 120_000];
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
     } catch (err) {
+      const errObj = err as { status?: number; error?: { type?: string } };
+
       const isOverloaded =
         (err instanceof Error &&
           (err.message.includes("overloaded") ||
            err.message.includes("529") ||
-           (err as { status?: number }).status === 529)) ||
-        (typeof err === "object" &&
-          err !== null &&
-          (err as { error?: { type?: string } }).error?.type === "overloaded_error");
+           errObj.status === 529)) ||
+        errObj.error?.type === "overloaded_error";
 
-      if (isOverloaded && attempt < maxRetries) {
-        const waitMs = delays[attempt] ?? 45_000;
+      const isRateLimited =
+        err instanceof Error &&
+        (err.message.includes("rate_limit") ||
+         err.message.includes("429") ||
+         errObj.status === 429);
+
+      if ((isOverloaded || isRateLimited) && attempt < maxRetries) {
+        const delays = isRateLimited ? rateLimitDelays : overloadedDelays;
+        const waitMs = delays[attempt] ?? delays[delays.length - 1];
+        const reason = isRateLimited ? "rate limited (429)" : "overloaded (529)";
         console.warn(
-          `[Retry] ${label} → overloaded，${waitMs / 1000}s 後重試 (${attempt + 1}/${maxRetries})...`
+          `[Retry] ${label} → ${reason}，等待 ${waitMs / 1000}s 後重試 (${attempt + 1}/${maxRetries})...`
         );
         await new Promise((resolve) => setTimeout(resolve, waitMs));
         continue;
@@ -82,6 +96,15 @@ export async function callAgent(options: AgentCallOptions): Promise<string> {
     });
     return stream.finalMessage();
   }, `callAgent(${model})`);
+
+  // Track token usage
+  if (response.usage) {
+    tokenTracker.record(
+      `callAgent(${model.split("-").slice(-2).join("-")})`,
+      response.usage.input_tokens,
+      response.usage.output_tokens
+    );
+  }
 
   // Extract text from response
   const textBlock = response.content.find(
@@ -137,6 +160,15 @@ export async function callAgentAgentic(
         }) as Promise<Anthropic.Messages.Message>,
       `callAgentAgentic(${model}) round=${round + 1}`
     );
+
+    // Track token usage for this round
+    if (response.usage) {
+      tokenTracker.record(
+        `callAgentAgentic(${model.split("-").slice(-2).join("-")})`,
+        response.usage.input_tokens,
+        response.usage.output_tokens
+      );
+    }
 
     if (response.stop_reason === "end_turn") {
       const textBlock = response.content.find(

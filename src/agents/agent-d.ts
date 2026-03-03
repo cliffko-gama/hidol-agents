@@ -29,12 +29,24 @@ ${JSON.stringify(input.feature_story, null, 2)}
 ${JSON.stringify(input.original_moments, null, 2)}
 
 ## 研究資料來源（用於來源合規檢查）
-
+${input.research.research_failed ? `
+> ⚠️ **研究階段失敗（Agent B 未能執行）**
+> 本篇文章在無外部研究資料的條件下撰寫。
+> **請將「來源合規」維度的評分標準放寬**：
+> - referenced_sources 應為空陣列 []，這是正確的，不應扣分。
+> - 文章若完全從 Moment 素材出發撰寫，符合要求，視同通過來源合規。
+` : ""}
 ### 允許的 URL 清單（referenced_sources 只能使用這些）
-${input.research.web_trends.map((t, i) => `${i + 1}. [${t.source}] ${t.url}\n   標題: ${t.title}\n   摘要: ${t.summary}`).join("\n\n")}
+${input.research.web_trends.length > 0
+    ? input.research.web_trends.map((t, i) => `${i + 1}. [${t.source}] ${t.url}\n   標題: ${t.title}\n   摘要: ${t.summary}`).join("\n\n")
+    : "_（本次研究無可引用的外部 URL）_"
+}
 
 ### 社群洞察（無 URL，不應出現在 referenced_sources）
-${input.research.social_insights.map((s) => `- [${s.platform}] ${s.trend_description}`).join("\n")}
+${input.research.social_insights.length > 0
+    ? input.research.social_insights.map((s) => `- [${s.platform}] ${s.trend_description}`).join("\n")
+    : "_（無社群洞察）_"
+}
 
 ## 品牌調性指南
 
@@ -64,17 +76,21 @@ ${input.lessons_context ? input.lessons_context + "\n---\n" : ""}
 請進行五維度審核並輸出結果 JSON。
 `;
 
-  // JSON retry: 如果解析失敗，自動重試最多 1 次
-  const MAX_JSON_RETRIES = 1;
+  // JSON retry: 如果解析失敗，自動重試最多 3 次
+  const MAX_JSON_RETRIES = 3;
   let result: AgentDOutput | null = null;
   let lastError: Error | null = null;
 
   for (let retry = 0; retry <= MAX_JSON_RETRIES; retry++) {
     try {
+      // 第 2 次起在 userMessage 尾端追加格式提醒，引導 LLM 輸出純 JSON
+      const retryHint = retry > 0
+        ? `\n\n⚠️ 注意：你上一次的輸出無法解析為 JSON。請確保輸出「純 JSON 物件」，不要包含 Markdown 程式碼區塊（\`\`\`）、前置說明文字或尾端評論。`
+        : "";
       const response = await callAgent({
         model: QUALITY_MODEL,
         systemPrompt: AGENT_D_SYSTEM_PROMPT,
-        userMessage,
+        userMessage: userMessage + retryHint,
         maxTokens: 12000,
       });
 

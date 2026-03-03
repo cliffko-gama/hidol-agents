@@ -141,17 +141,21 @@ ${allowedSourcesBlock}
 記住：referenced_sources 中的每個 URL 都必須完全來自上方「允許引用的外部來源」清單。若無來源，referenced_sources 必須為 []。
 `;
 
-  // JSON retry: 如果解析失敗，自動重試最多 1 次
-  const MAX_JSON_RETRIES = 1;
+  // JSON retry: 如果解析失敗，自動重試最多 3 次
+  const MAX_JSON_RETRIES = 3;
   let result: AgentCOutput | null = null;
   let lastError: Error | null = null;
 
   for (let retry = 0; retry <= MAX_JSON_RETRIES; retry++) {
     try {
+      // 第 2 次起在 userMessage 尾端追加格式提醒，引導 LLM 輸出純 JSON
+      const retryHint = retry > 0
+        ? `\n\n⚠️ 注意：你上一次的輸出無法解析為 JSON。請確保輸出「純 JSON 物件」，不要包含 Markdown 程式碼區塊（\`\`\`）、前置說明文字或尾端評論。`
+        : "";
       const response = await callAgent({
         model: QUALITY_MODEL,
         systemPrompt: AGENT_C_SYSTEM_PROMPT,
-        userMessage,
+        userMessage: userMessage + retryHint,
         maxTokens: 16000,
       });
 

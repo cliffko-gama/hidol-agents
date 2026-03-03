@@ -165,6 +165,12 @@ export interface AgentBOutput {
    */
   context_summary: string;
   /**
+   * 標記研究階段是否因錯誤而降級為空結果。
+   * true 時代表 Agent B 失敗，以下欄位均為空，
+   * Agent D 應對「來源合規」維度採取較寬鬆的評分標準。
+   */
+  research_failed?: boolean;
+  /**
    * 從 Moment 自身萃取的話題性信號。
    * 用於解釋「為什麼這批 Moment 值得寫成 Feature Story」。
    */

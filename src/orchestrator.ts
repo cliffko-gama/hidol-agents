@@ -39,6 +39,12 @@ import {
   formatLessonsForPrompt,
   buildScoreTrend,
 } from "./lib/lessons.js";
+import {
+  loadCheckpoint,
+  saveCheckpoint,
+  getTopicCheckpoint,
+  upsertTopicCheckpoint,
+} from "./lib/checkpoint.js";
 import fs from "fs";
 import path from "path";
 
@@ -74,6 +80,13 @@ export async function runPipeline(
   const dResultsCollector: ExtractionInput["dResults"] = [];
   const autoFixCounts: Record<string, number> = {};
   const jsonRetryCounts: ExtractionInput["jsonRetryCounts"] = [];
+
+  // 斷點續傳：載入上次未完成的進度
+  const checkpoint = outputDir ? loadCheckpoint(outputDir) : null;
+  const cachedTopics = checkpoint?.topics.filter((t) => t.published_meta).map((t) => t.title) ?? [];
+  if (cachedTopics.length > 0) {
+    console.log(`[Checkpoint] 發現 ${cachedTopics.length} 個已發佈主題，可跳過：${cachedTopics.join("、")}`);
+  }
 
   console.log("\n========================================");
   console.log("  hidol Feature Story Pipeline 啟動");
@@ -162,73 +175,97 @@ export async function runPipeline(
       topic.moment_ids.includes(m.id)
     );
 
+    // --- Checkpoint: 檢查此主題是否已完整發佈 ---
+    const topicCheckpoint = checkpoint ? getTopicCheckpoint(checkpoint, topic.title) : undefined;
+    if (topicCheckpoint?.published_meta) {
+      console.log(`[Checkpoint] ✅ 主題「${topic.title}」已發佈，跳過所有階段`);
+      publishedStories.push(topicCheckpoint.published_meta);
+      continue;
+    }
+
     // --- Agent B: 趨勢研究 ---
     console.log("--- Stage 3: 趨勢研究 ---\n");
-    console.log("[Rate Limit] 等待 20 秒避免超過 TPM 上限...");
-    await sleep(20_000);
-
-    // 計算 moments 摘要，提供給 Agent B 判斷素材豐富度以決定搜尋深度
-    const avgTextLength =
-      topicMoments.length > 0
-        ? Math.round(
-            topicMoments.reduce((sum, m) => sum + (m.text_content?.length ?? 0), 0) /
-              topicMoments.length
-          )
-        : 0;
-    const sampleTexts = topicMoments
-      .slice(0, 5)
-      .map((m) => m.text_content ?? "")
-      .filter((t) => t.length > 0);
-
-    // 互動最高的前 5 則 Moment（有 likes 優先，否則取前 5）
-    const topMomentsForB = [...topicMoments]
-      .sort((a, b) => (b.engagement?.likes ?? 0) - (a.engagement?.likes ?? 0))
-      .slice(0, 5)
-      .map((m) => ({
-        text: (m.text_content ?? "").slice(0, 150),  // 限長避免超 token
-        engagement_likes: m.engagement?.likes ?? 0,
-        has_media: (m.media?.length ?? 0) > 0,
-      }));
 
     let bResult: AgentBOutput;
-    try {
-      bResult = await runAgentB({
-        topic,
-        moments_summary: {
-          count: topicMoments.length,
-          avg_text_length: avgTextLength,
-          sample_texts: sampleTexts,
-          top_moments: topMomentsForB,
-        },
-        research_config: {
-          max_search_rounds: config.research.max_search_rounds,
-          languages: config.research.languages,
-        },
-      });
-    } catch (err) {
-      console.error(`[ERROR] Agent B 失敗，使用空的研究結果繼續...`);
-      errors.push({
-        stage: "researching",
-        agent: "B",
-        message: err instanceof Error ? err.message : String(err),
-        topic_id: topic.topic_id,
-        timestamp: new Date().toISOString(),
-        retryable: true,
-      });
-      bResult = {
-        web_trends: [],
-        social_insights: [],
-        suggested_angles: ["直接從 Moment 用戶的觀點出發撰寫"],
-        context_summary: "（研究階段失敗，請僅使用 Moment 素材撰寫）",
-      };
+
+    // 優先從 checkpoint 復用 Agent B 的研究結果
+    if (topicCheckpoint?.b_result) {
+      console.log(`[Checkpoint] ♻️  復用上次的研究結果，跳過 Agent B`);
+      bResult = topicCheckpoint.b_result;
+    } else {
+      console.log("[Rate Limit] 等待 5 秒（429/529 由 withRetry 動態退避處理）...");
+      await sleep(5_000);
+
+      // 計算 moments 摘要，提供給 Agent B 判斷素材豐富度以決定搜尋深度
+      const avgTextLength =
+        topicMoments.length > 0
+          ? Math.round(
+              topicMoments.reduce((sum, m) => sum + (m.text_content?.length ?? 0), 0) /
+                topicMoments.length
+            )
+          : 0;
+      const sampleTexts = topicMoments
+        .slice(0, 5)
+        .map((m) => m.text_content ?? "")
+        .filter((t) => t.length > 0);
+
+      // 互動最高的前 5 則 Moment（有 likes 優先，否則取前 5）
+      const topMomentsForB = [...topicMoments]
+        .sort((a, b) => (b.engagement?.likes ?? 0) - (a.engagement?.likes ?? 0))
+        .slice(0, 5)
+        .map((m) => ({
+          text: (m.text_content ?? "").slice(0, 150),  // 限長避免超 token
+          engagement_likes: m.engagement?.likes ?? 0,
+          has_media: (m.media?.length ?? 0) > 0,
+        }));
+
+      try {
+        bResult = await runAgentB({
+          topic,
+          moments_summary: {
+            count: topicMoments.length,
+            avg_text_length: avgTextLength,
+            sample_texts: sampleTexts,
+            top_moments: topMomentsForB,
+          },
+          research_config: {
+            max_search_rounds: config.research.max_search_rounds,
+            languages: config.research.languages,
+          },
+        });
+
+        // Agent B 成功 → 存入 checkpoint，下次 re-run 可跳過
+        if (checkpoint && outputDir) {
+          upsertTopicCheckpoint(checkpoint, topic.title, { b_result: bResult });
+          saveCheckpoint(outputDir, checkpoint);
+          console.log(`[Checkpoint] 💾 Agent B 結果已快取`);
+        }
+      } catch (err) {
+        console.error(`[ERROR] Agent B 失敗，使用空的研究結果繼續...`);
+        errors.push({
+          stage: "researching",
+          agent: "B",
+          message: err instanceof Error ? err.message : String(err),
+          topic_id: topic.topic_id,
+          timestamp: new Date().toISOString(),
+          retryable: true,
+        });
+        bResult = {
+          web_trends: [],
+          social_insights: [],
+          suggested_angles: ["直接從 Moment 用戶的觀點出發撰寫"],
+          context_summary: "（研究階段失敗，請僅使用 Moment 素材撰寫）",
+          research_failed: true,
+        };
+      }
     }
 
     if (artifactsDir) saveArtifact(artifactsDir, `03-topic-${i + 1}-agent-b-research.json`, bResult);
 
     // --- Agent C + D: 撰寫 + 審核 feedback loop ---
     console.log("\n--- Stage 4-5: 撰寫 + 審核 ---\n");
-    console.log("[Rate Limit] 等待 60 秒避免超過 TPM 上限...");
-    await sleep(60_000);
+    console.log("[Rate Limit] 等待 15 秒（429/529 由 withRetry 動態退避處理）...");
+    await sleep(15_000);
 
     // 只傳 top 5 Moments（按 likes 排序），減少 Agent C 的 input tokens
     const top5Moments = [...topicMoments]
@@ -264,6 +301,12 @@ export async function runPipeline(
           retryable: true,
         });
         break;
+      }
+
+      // Theme Spine 前置驗證：檢查 intro 是否包含核心關鍵字
+      const themeSpineWarning = checkThemeSpine(cResult.feature_story, topic, bResult);
+      if (themeSpineWarning) {
+        console.warn(`[Theme Spine] ⚠️ ${themeSpineWarning}`);
       }
 
       // Auto-fix: 確保 referenced_moment_ids 包含所有實際引用的 Moment
@@ -326,8 +369,14 @@ export async function runPipeline(
           .join("\n");
 
         const baseInstructions = dResult.revision_instructions ?? "請改善整體品質";
+
+        // 若 Theme Spine 驗證有警告，在 revision feedback 前置提示
+        const themeSpineHint = themeSpineWarning
+          ? `## ⚠️ Theme Spine 警告（Orchestrator 自動附加）\n\n${themeSpineWarning}\n\n請確保 intro 前兩句就點出文章的核心 Theme Spine。\n\n---\n\n`
+          : "";
+
         lastReviewFeedback =
-          `${baseInstructions}\n\n---\n\n` +
+          `${themeSpineHint}${baseInstructions}\n\n---\n\n` +
           `## 📋 正確的外部來源 URL 清單（Orchestrator 自動附加）\n\n` +
           `你的 referenced_sources 只能從以下 URL 中選用：\n\n${correctUrlList}\n\n` +
           `⚠️ 不要使用任何不在此清單中的 URL。`;
@@ -365,6 +414,16 @@ export async function runPipeline(
       // 寫入檔案到 hidol-fansite
       for (const file of eResult.generated_files) {
         console.log(`[Output] ${file.action}: ${file.path}`);
+      }
+
+      // 發佈成功 → 儲存 checkpoint，下次 re-run 可完整跳過此主題
+      if (checkpoint && outputDir) {
+        upsertTopicCheckpoint(checkpoint, topic.title, {
+          story,
+          published_meta: eResult.story_meta,
+        });
+        saveCheckpoint(outputDir, checkpoint);
+        console.log(`[Checkpoint] 💾 主題「${topic.title}」已標記為發佈完成`);
       }
     } catch (err) {
       console.error(`[ERROR] Agent E 發佈失敗: ${err instanceof Error ? err.message : String(err)}`);
@@ -542,6 +601,51 @@ function autoFilterReferencedSources(
         `(${before} → ${story.referenced_sources.length})`
     );
   }
+}
+
+/**
+ * Theme Spine 前置驗證：
+ * 掃描 intro 段落的前兩句，確認包含至少一個核心關鍵字。
+ * 若缺失，回傳警告文字；否則回傳 null。
+ */
+function checkThemeSpine(
+  story: FeatureStory,
+  topic: Topic,
+  research: AgentBOutput
+): string | null {
+  const introSection = story.sections.find((s) => s.type === "intro");
+  if (!introSection) return null;
+
+  // 取 intro 前兩句（以句號、問號、感嘆號或換行切割）
+  const firstTwoSentences = introSection.content
+    .split(/[。！？!?\n]/)
+    .filter((s) => s.trim().length > 0)
+    .slice(0, 2)
+    .join("。");
+
+  if (!firstTwoSentences) return null;
+
+  // 收集候選關鍵字：topic 標題詞 + Agent B 的關鍵字
+  const topicKeywords = topic.title
+    .split(/[\s　、，,\/\-]+/)
+    .filter((w) => w.length >= 2);
+  const researchKeywords = research.moment_trend_signals?.keywords ?? [];
+  const allKeywords = [...new Set([...topicKeywords, ...researchKeywords])];
+
+  // 找是否有關鍵字出現在前兩句
+  const found = allKeywords.filter((kw) =>
+    firstTwoSentences.includes(kw)
+  );
+
+  if (found.length === 0 && allKeywords.length > 0) {
+    return (
+      `intro 前兩句未包含任何核心關鍵字。` +
+      `\n  候選關鍵字: ${allKeywords.slice(0, 8).join("、")}` +
+      `\n  intro 前兩句: 「${firstTwoSentences.slice(0, 80)}」`
+    );
+  }
+
+  return null;
 }
 
 function buildResult(

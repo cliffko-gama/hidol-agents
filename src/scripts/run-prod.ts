@@ -14,6 +14,8 @@ import path from "path";
 import type { Moment, Media } from "../types/moment.js";
 import { HIDOL_EDITORIAL_GUIDELINES } from "../prompts/editorial-guidelines.js";
 import { runPipeline } from "../orchestrator.js";
+import { notifyPipelineResult } from "../lib/notify.js";
+import { tokenTracker } from "../lib/token-tracker.js";
 import type { PipelineConfig } from "../types/pipeline.js";
 
 // ============================================================
@@ -296,6 +298,12 @@ async function main() {
   const outputPath = path.join(outputDir, `${runId}.json`);
   fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
   console.log(`\n完整結果已儲存至: ${outputPath}`);
+
+  // Token 成本摘要
+  tokenTracker.printSummary();
+
+  // 發送執行結果通知（GitHub Job Summary + Slack）
+  await notifyPipelineResult(result, runId);
 }
 
 main().catch((err) => {

@@ -7,6 +7,8 @@
 import { TAIWAN_IDOL_MOMENTS } from "./fixtures/prod-moments-taiwan-idol.js";
 import { HIDOL_EDITORIAL_GUIDELINES } from "./prompts/editorial-guidelines.js";
 import { runPipeline } from "./orchestrator.js";
+import { notifyPipelineResult } from "./lib/notify.js";
+import { tokenTracker } from "./lib/token-tracker.js";
 import type { PipelineConfig } from "./types/pipeline.js";
 import fs from "fs";
 import path from "path";
@@ -86,6 +88,12 @@ async function main() {
   const outputPath = path.join(outputDir, `${runId}.json`);
   fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
   console.log(`\n完整結果已儲存至: ${outputPath}`);
+
+  // Token 成本摘要
+  tokenTracker.printSummary();
+
+  // 發送執行結果通知（GitHub Job Summary + Slack）
+  await notifyPipelineResult(result, runId);
 }
 
 main().catch((err) => {
