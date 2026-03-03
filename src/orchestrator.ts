@@ -49,13 +49,10 @@ import {
   loadStoryHistory,
   saveStoryHistory,
   appendPublishedStories,
-  getRecentStoryTitles,
+  // getRecentStoryTitles,  ← 暫時停用：初期文章數少，先不做跨 run 去重
 } from "./lib/story-history.js";
 import fs from "fs";
 import path from "path";
-
-/** 同一主題在此天數內發佈過 → Agent A2 不會重複選題；超過後自動解鎖 */
-const DEDUP_COOLDOWN_DAYS = 60;
 
 /** 儲存中間產物到指定目錄 */
 function saveArtifact(outputDir: string, filename: string, data: unknown) {
@@ -97,17 +94,11 @@ export async function runPipeline(
     console.log(`[Checkpoint] 發現 ${cachedTopics.length} 個已發佈主題，可跳過：${cachedTopics.join("、")}`);
   }
 
-  // 跨 run 去重：載入發佈歷史，取出冷卻期內的主題標題
+  // 發佈歷史：僅用於累積記錄，跨 run 去重功能暫時停用
+  // （初期文章數少，開啟去重反而過度保守；日後開啟時取消 getRecentStoryTitles 的註解）
   const storyHistory = outputDir ? loadStoryHistory(outputDir) : null;
-  const recentTitles = storyHistory
-    ? getRecentStoryTitles(storyHistory, DEDUP_COOLDOWN_DAYS)
-    : [];
-  if (recentTitles.length > 0) {
-    console.log(
-      `[StoryHistory] 最近 ${DEDUP_COOLDOWN_DAYS} 天內已發佈 ${recentTitles.length} 個主題（Agent A2 將避開）：${recentTitles.join("、")}`
-    );
-  } else if (storyHistory) {
-    console.log(`[StoryHistory] 歷史記錄：累計 ${storyHistory.stories.length} 篇（無冷卻中主題）`);
+  if (storyHistory) {
+    console.log(`[StoryHistory] 歷史記錄：累計 ${storyHistory.stories.length} 篇`);
   }
 
   console.log("\n========================================");
@@ -160,11 +151,7 @@ export async function runPipeline(
   try {
     a2Result = await runAgentA2({
       filtered_moments: a1Result.filtered_moments,
-      // 合併：冷卻期內的歷史主題 + config 手動指定的禁止清單
-      existing_topic_titles: [
-        ...recentTitles,
-        ...(config.clustering.existing_topic_titles ?? []),
-      ],
+      existing_topic_titles: config.clustering.existing_topic_titles,
       max_topics: config.clustering.max_topics,
     });
   } catch (err) {
