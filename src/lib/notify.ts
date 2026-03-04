@@ -3,7 +3,7 @@
  *
  * 支援：
  * 1. GitHub Actions Job Summary — $GITHUB_STEP_SUMMARY 存在時自動寫入 Markdown
- * 2. Slack Webhook — SLACK_WEBHOOK_URL 存在且有失敗時自動發送
+ * 2. Google Chat Webhook — GOOGLE_CHAT_WEBHOOK_URL 存在且有失敗時自動發送
  *
  * 在本地開發時兩者皆為 no-op，不影響現有流程。
  */
@@ -24,10 +24,10 @@ export async function notifyPipelineResult(
     tasks.push(writeGitHubSummary(summaryPath, result, runId));
   }
 
-  // 2. Slack Webhook（僅在有錯誤時發送）
-  const slackUrl = process.env.SLACK_WEBHOOK_URL;
-  if (slackUrl && (result.status !== "success" || result.errors.length > 0)) {
-    tasks.push(sendSlackAlert(slackUrl, result, runId));
+  // 2. Google Chat Webhook（僅在有錯誤時發送）
+  const chatUrl = process.env.GOOGLE_CHAT_WEBHOOK_URL;
+  if (chatUrl && (result.status !== "success" || result.errors.length > 0)) {
+    tasks.push(sendGoogleChatAlert(chatUrl, result, runId));
   }
 
   if (tasks.length > 0) {
@@ -93,9 +93,9 @@ ${errorsSection}
   return Promise.resolve();
 }
 
-// ─── Slack Webhook ──────────────────────────────────────────────────────────
+// ─── Google Chat Webhook ─────────────────────────────────────────────────────
 
-async function sendSlackAlert(
+async function sendGoogleChatAlert(
   webhookUrl: string,
   result: PipelineResult,
   runId: string
@@ -104,24 +104,32 @@ async function sendSlackAlert(
     result.status === "success" ? "✅" :
     result.status === "partial_success" ? "⚠️" : "❌";
 
+  const statusLabel =
+    result.status === "success" ? "成功" :
+    result.status === "partial_success" ? "部分成功" : "失敗";
+
   const errorList =
     result.errors.length > 0
       ? result.errors.map((e) => `• [${e.agent}] ${e.message.slice(0, 150)}`).join("\n")
       : "無";
 
-  const payload = {
-    text: `${statusEmoji} *hidol Pipeline 完成* — \`${runId}\``,
-    attachments: [
-      {
-        color: result.status === "success" ? "good" : result.status === "partial_success" ? "warning" : "danger",
-        fields: [
-          { title: "狀態", value: result.status, short: true },
-          { title: "發佈文章", value: String(result.stats.stories_published), short: true },
-          { title: "錯誤", value: errorList, short: false },
-        ],
-      },
-    ],
-  };
+  const storiesList =
+    result.published_stories.length > 0
+      ? result.published_stories.map((s) => `• ${s.title}`).join("\n")
+      : "（本次未發佈）";
+
+  // Google Chat 使用 text 格式（支援 *bold* 和基本換行）
+  const text = [
+    `${statusEmoji} *hidol Pipeline ${statusLabel}* — \`${runId}\``,
+    ``,
+    `*狀態：* ${statusLabel}`,
+    `*發佈文章（${result.stats.stories_published} 篇）：*`,
+    storiesList,
+    `*錯誤：*`,
+    errorList,
+  ].join("\n");
+
+  const payload = { text };
 
   const response = await fetch(webhookUrl, {
     method: "POST",
@@ -130,8 +138,8 @@ async function sendSlackAlert(
   });
 
   if (!response.ok) {
-    throw new Error(`Slack webhook 回應 ${response.status}: ${await response.text()}`);
+    throw new Error(`Google Chat webhook 回應 ${response.status}: ${await response.text()}`);
   }
 
-  console.log("[Notify] ✅ Slack 告警已發送");
+  console.log("[Notify] ✅ Google Chat 告警已發送");
 }

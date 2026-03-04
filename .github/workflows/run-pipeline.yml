@@ -51,9 +51,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # ── 4. 建立 .env（注入 API Key）────────────
+      # ── 4. 建立 .env（注入 API Key 與 Webhook URL）──
       - name: Create .env file
-        run: echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" > .env
+        run: |
+          echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" > .env
+          if [ -n "${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}" ]; then
+            echo "GOOGLE_CHAT_WEBHOOK_URL=${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}" >> .env
+          fi
 
       # ── 5a. 執行 Pipeline（mock 模式）──────────
       - name: Run pipeline with mock data
