@@ -2,7 +2,7 @@
  * Pipeline 結果通知
  *
  * 支援：
- * 1. GitHub Actions Job Summary — $GITHUB_STEP_SUMMARY 存在時自動寫入 Markdown
+ * 1. CI Job Summary — $GITHUB_STEP_SUMMARY 存在時自動寫入 Markdown（GitHub Actions 專用，GitLab 自動略過）
  * 2. Google Chat Webhook — GOOGLE_CHAT_WEBHOOK_URL 存在且有失敗時自動發送
  *
  * 在本地開發時兩者皆為 no-op，不影響現有流程。
@@ -18,7 +18,7 @@ export async function notifyPipelineResult(
 ): Promise<void> {
   const tasks: Promise<void>[] = [];
 
-  // 1. GitHub Actions Job Summary
+  // 1. CI Job Summary（GitHub Actions 專用，GitLab 環境下 GITHUB_STEP_SUMMARY 不存在，自動略過）
   const summaryPath = process.env.GITHUB_STEP_SUMMARY;
   if (summaryPath) {
     tasks.push(writeGitHubSummary(summaryPath, result, runId));

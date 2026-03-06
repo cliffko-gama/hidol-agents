@@ -1,0 +1,87 @@
+# .gitlab-ci.yml
+# hidol AI Pipeline — GitLab CI/CD 設定
+#
+# ─────────────────────────────────────────────
+# 觸發方式：
+#   1. Pipeline Schedules（排程）
+#      Settings → CI/CD → Schedules → New schedule
+#      Cron: 0 1 * * 1  (UTC 01:00 = 台灣時間週一 09:00)
+#      變數: DATA_MODE = mock（或 production）
+#
+#   2. 手動觸發（Web）
+#      CI/CD → Pipelines → Run pipeline
+#      可在此設定 DATA_MODE 變數
+#
+# ─────────────────────────────────────────────
+# 必要的 CI/CD 變數（Settings → CI/CD → Variables）：
+#   - ANTHROPIC_API_KEY         (Protected, Masked)
+#   - GL_TOKEN                  (Project Access Token，需有 write_repository 權限)
+#
+# 選填的 CI/CD 變數：
+#   - GOOGLE_CHAT_WEBHOOK_URL   (Protected, Masked)
+# ─────────────────────────────────────────────
+
+stages:
+  - pipeline
+
+run-pipeline:
+  stage: pipeline
+  image: node:22
+
+  # 只在排程或手動（Web UI）觸發時執行
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+
+  variables:
+    DATA_MODE: "mock"   # 預設使用 mock 資料；排程或手動觸發時可覆蓋
+    GIT_DEPTH: 0        # 完整 git history（push 回 repo 需要）
+
+  before_script:
+    # 設定 git 推送身份（使用 Project Access Token）
+    - git config user.name "gitlab-ci-bot"
+    - git config user.email "gitlab-ci-bot@hidol.internal"
+    - git remote set-url origin "https://oauth2:${GL_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+
+  script:
+    # ── 1. 安裝依賴 ──────────────────────────────
+    - npm ci
+
+    # ── 2. 建立 .env ─────────────────────────────
+    - |
+      echo "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}" > .env
+      if [ -n "${GOOGLE_CHAT_WEBHOOK_URL}" ]; then
+        echo "GOOGLE_CHAT_WEBHOOK_URL=${GOOGLE_CHAT_WEBHOOK_URL}" >> .env
+      fi
+
+    # ── 3. 執行 Pipeline ─────────────────────────
+    - |
+      if [ "${DATA_MODE}" = "production" ] && [ -f "moments-input.json" ]; then
+        echo "▶ Production 模式：使用 moments-input.json"
+        node --env-file=.env --import tsx src/scripts/run-prod.ts moments-input.json
+      else
+        if [ "${DATA_MODE}" = "production" ]; then
+          echo "⚠️  找不到 moments-input.json，改用 mock 資料執行"
+        fi
+        npm start
+      fi
+
+    # ── 4. 產生靜態網站 ───────────────────────────
+    - npm run generate-docs
+
+    # ── 5. Commit & Push docs/ ───────────────────
+    - |
+      git add docs/
+      if git diff --staged --quiet; then
+        echo "docs/ 沒有變更，跳過 commit"
+      else
+        STORY_COUNT=$(find docs/stories -name "*.json" 2>/dev/null | wc -l | tr -d ' ')
+        git commit -m "deploy: update ${STORY_COUNT} stories (${CI_PIPELINE_SOURCE}) [skip ci]"
+        git pull --rebase origin ${CI_DEFAULT_BRANCH}
+        git push origin HEAD:${CI_DEFAULT_BRANCH}
+        echo "✅ docs/ 已成功更新並推送"
+      fi
+
+  after_script:
+    # 清除 .env（安全性）
+    - rm -f .env
