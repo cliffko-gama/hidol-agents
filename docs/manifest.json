@@ -1,42 +1,48 @@
 {
-  "generated_at": "2026-03-03T08:47:11.122Z",
-  "story_count": 15,
+  "generated_at": "2026-03-09T05:50:59.784Z",
+  "story_count": 16,
   "stories": [
     {
       "story_id": "從高雄到大佳-三萬人一起哭的那個晚上",
       "title": "從高雄到大佳：三萬人一起哭的那個晚上",
-      "published_at": "2026-03-03T08:47:11.084Z",
+      "published_at": "2026-03-09T05:50:59.761Z",
       "tags": []
     },
     {
       "story_id": "鏡頭之外-那些你沒看到的幕後瞬間",
       "title": "鏡頭之外：那些你沒看到的幕後瞬間",
-      "published_at": "2026-03-03T08:47:11.084Z",
+      "published_at": "2026-03-09T05:50:59.761Z",
       "tags": []
     },
     {
       "story_id": "haikyu-merchandise-guide-2026-h1",
       "title": "排球少年收藏熱：2026 上半年粉絲必搶周邊完全攻略",
-      "published_at": "2026-03-03T08:47:11.083Z",
+      "published_at": "2026-03-09T05:50:59.760Z",
       "tags": []
     },
     {
       "story_id": "chiikawa-taiwan-2026-h1",
       "title": "吉伊卡哇攻台計畫：從快閃到常設，粉絲終於等到了",
-      "published_at": "2026-03-03T08:47:11.082Z",
+      "published_at": "2026-03-09T05:50:59.759Z",
       "tags": []
+    },
+    {
+      "story_id": "fenix-seen-moments",
+      "title": "被看見的瞬間：FEniX 與救火隊的雙向奔赴",
+      "published_at": "2026-03-09T05:50:11.419Z",
+      "tags": [
+        "FEniX",
+        "救火隊",
+        "粉絲見面會",
+        "追星日常",
+        "雙向奔赴"
+      ]
     },
     {
       "story_id": "fenix-double-way-companionship",
       "title": "被記得的幸福：FEniX 與粉絲的雙向陪伴",
       "published_at": "2026-03-03T08:46:15.256Z",
-      "tags": [
-        "FEniX",
-        "追星日常",
-        "粉絲陪伴",
-        "雙向奔赴",
-        "被記得的幸福"
-      ]
+      "tags": []
     },
     {
       "story_id": "fenix-distance-moments",
