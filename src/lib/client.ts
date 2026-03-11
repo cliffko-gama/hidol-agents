@@ -47,9 +47,9 @@ export const DEFAULT_MODEL = "claude-sonnet-4-5";
 
 // ── Gemini 模型常數 ────────────────────────────────────────────
 /** Gemini 成本優先（對應 Haiku 的定位） */
-export const GEMINI_FAST_MODEL = "gemini-3.1-flash-preview";
+export const GEMINI_FAST_MODEL = "gemini-2.5-flash";
 /** Gemini 品質優先（對應 Sonnet 的定位） */
-export const GEMINI_QUALITY_MODEL = "gemini-3.1-pro-preview";
+export const GEMINI_QUALITY_MODEL = "gemini-2.5-pro";
 
 // ── Provider 對應的預設模型 ────────────────────────────────────
 export const PROVIDER_FAST_MODEL: Record<Provider, string> = {
