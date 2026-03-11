@@ -6,7 +6,7 @@ import type { Moment } from "../types/moment.js";
 import type { AgentA1Input, AgentA1Output } from "../types/agents.js";
 import { AGENT_A1_SYSTEM_PROMPT } from "../prompts/agent-a1.js";
 import { callAgent, extractJSON } from "../lib/call-agent.js";
-import { FAST_MODEL } from "../lib/client.js";
+import { PROVIDER_FAST_MODEL, type Provider } from "../lib/client.js";
 
 /** Agent A1 LLM 只輸出 ID 列表，避免輸出巨大的 Moment 物件 */
 interface AgentA1LLMOutput {
@@ -15,7 +15,7 @@ interface AgentA1LLMOutput {
   stats: AgentA1Output["stats"];
 }
 
-export async function runAgentA1(input: AgentA1Input): Promise<AgentA1Output> {
+export async function runAgentA1(input: AgentA1Input, provider: Provider = "anthropic"): Promise<AgentA1Output> {
   console.log(`[Agent A1] 開始篩選 ${input.moments.length} 則 Moment...`);
 
   // 傳給 LLM 的是「輕量摘要」，不含完整媒體物件（避免 input/output token 爆炸）
@@ -50,10 +50,11 @@ ${JSON.stringify(momentSummaries, null, 2)}
 `;
 
   const response = await callAgent({
-    model: FAST_MODEL,
+    model: PROVIDER_FAST_MODEL[provider],
     systemPrompt: AGENT_A1_SYSTEM_PROMPT,
     userMessage,
     maxTokens: 8000,
+    provider,
   });
 
   // 解析 LLM 輸出（只含 ID）

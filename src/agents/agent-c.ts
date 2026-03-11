@@ -12,9 +12,9 @@ import type {
 } from "../types/agents.js";
 import { AGENT_C_SYSTEM_PROMPT } from "../prompts/agent-c.js";
 import { callAgent, extractJSON } from "../lib/call-agent.js";
-import { QUALITY_MODEL } from "../lib/client.js";
+import { PROVIDER_QUALITY_MODEL, type Provider } from "../lib/client.js";
 
-export async function runAgentC(input: AgentCInput): Promise<AgentCOutput> {
+export async function runAgentC(input: AgentCInput, provider: Provider = "anthropic"): Promise<AgentCOutput> {
   const isRevision = input.attempt_number > 1;
   console.log(
     `[Agent C] ${isRevision ? `第 ${input.attempt_number} 次修改` : "開始撰寫"}「${input.topic.title}」...`
@@ -206,10 +206,11 @@ ${allowedSourcesBlock}
         ? `\n\n⚠️ 注意：你上一次的輸出無法解析為 JSON。請確保輸出「純 JSON 物件」，不要包含 Markdown 程式碼區塊（\`\`\`）、前置說明文字或尾端評論。`
         : "";
       const response = await callAgent({
-        model: QUALITY_MODEL,
+        model: PROVIDER_QUALITY_MODEL[provider],
         systemPrompt: AGENT_C_SYSTEM_PROMPT,
         userMessage: userMessage + retryHint,
         maxTokens: 16000,
+        provider,
       });
 
       result = extractJSON<AgentCOutput>(response);

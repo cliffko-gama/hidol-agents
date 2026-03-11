@@ -11,14 +11,14 @@
 import type { AgentBInput, AgentBOutput } from "../types/agents.js";
 import { AGENT_B_SYSTEM_PROMPT } from "../prompts/agent-b.js";
 import { callAgentAgentic, extractJSON } from "../lib/call-agent.js";
-import { QUALITY_MODEL } from "../lib/client.js";
+import { PROVIDER_QUALITY_MODEL, type Provider } from "../lib/client.js";
 
 const WEB_SEARCH_TOOL = {
   type: "web_search_20250305",
   name: "web_search",
 };
 
-export async function runAgentB(input: AgentBInput): Promise<AgentBOutput> {
+export async function runAgentB(input: AgentBInput, provider: Provider = "anthropic"): Promise<AgentBOutput> {
   const momentCount = input.moments_summary?.count ?? input.topic.moment_ids.length;
   const isContentThin = input.topic.richness === "low" || momentCount < 5;
   const baseRounds = input.research_config?.max_search_rounds ?? 3;
@@ -88,12 +88,13 @@ ${momentDataSection || `（素材摘要：${input.topic.richness} 豐富度，${
 `.trim();
 
   const response = await callAgentAgentic({
-    model: QUALITY_MODEL,
+    model: PROVIDER_QUALITY_MODEL[provider],
     systemPrompt: AGENT_B_SYSTEM_PROMPT,
     userMessage,
     maxTokens: 6000,  // 縮小 max_tokens 降低 rate limit 壓力
     tools: [WEB_SEARCH_TOOL],
     maxRounds: maxSearchRounds + 4,
+    provider,
   });
 
   const result = extractJSON<AgentBOutput>(response);

@@ -5,9 +5,9 @@
 import type { AgentA2Input, AgentA2Output } from "../types/agents.js";
 import { AGENT_A2_SYSTEM_PROMPT } from "../prompts/agent-a2.js";
 import { callAgent, extractJSON } from "../lib/call-agent.js";
-import { QUALITY_MODEL } from "../lib/client.js";
+import { PROVIDER_QUALITY_MODEL, type Provider } from "../lib/client.js";
 
-export async function runAgentA2(input: AgentA2Input): Promise<AgentA2Output> {
+export async function runAgentA2(input: AgentA2Input, provider: Provider = "anthropic"): Promise<AgentA2Output> {
   console.log(
     `[Agent A2] 開始分析 ${input.filtered_moments.length} 則 Moment 的主題...`
   );
@@ -26,10 +26,11 @@ ${JSON.stringify(input.filtered_moments, null, 2)}
 `;
 
   const response = await callAgent({
-    model: QUALITY_MODEL,
+    model: PROVIDER_QUALITY_MODEL[provider],
     systemPrompt: AGENT_A2_SYSTEM_PROMPT,
     userMessage,
     maxTokens: 8192,
+    provider,
   });
 
   const result = extractJSON<AgentA2Output>(response);

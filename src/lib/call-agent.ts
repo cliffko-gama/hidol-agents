@@ -1,9 +1,20 @@
 /**
- * Shared utility for calling an agent (Claude API with structured output)
+ * Shared utility for calling an agent (Anthropic / Gemini with structured output)
+ *
+ * callAgent()        — 單次呼叫（所有 agent 適用）
+ * callAgentAgentic() — 工具迴圈呼叫（Agent B 的搜尋適用）
+ *
+ * 兩個函式皆透過 provider 欄位選擇後端：
+ *   provider: "anthropic" (預設) — 使用 Anthropic SDK + Claude
+ *   provider: "gemini"           — 使用 Google Generative AI SDK + Gemini
+ *
+ * Agent B 使用 web search 時的行為差異：
+ *   Anthropic: web_search_20250305 工具（server-side 執行，需 tool_use 迴圈）
+ *   Gemini:    googleSearch grounding（自動執行，一次呼叫即回傳結果）
  */
 
 import Anthropic from "@anthropic-ai/sdk";
-import { getClient } from "./client.js";
+import { getClient, getGeminiClient, type Provider } from "./client.js";
 import { tokenTracker } from "./token-tracker.js";
 
 /**
@@ -63,6 +74,8 @@ export interface AgentCallOptions {
   userMessage: string;
   maxTokens?: number;
   tools?: Anthropic.Messages.Tool[];
+  /** 使用的 provider，預設為 "anthropic" */
+  provider?: Provider;
 }
 
 export interface AgentAgenticOptions {
@@ -72,20 +85,28 @@ export interface AgentAgenticOptions {
   maxTokens?: number;
   /** 要掛載的工具（支援 web_search_20250305 等 built-in 工具） */
   tools?: unknown[];
-  /** 最多執行幾輪 tool_use → tool_result 迴圈，預設 12 */
+  /** 最多執行幾輪 tool_use → tool_result 迴圈，預設 12（Gemini 自動搜尋，此參數忽略） */
   maxRounds?: number;
+  /** 使用的 provider，預設為 "anthropic" */
+  provider?: Provider;
 }
 
 /**
- * Call Claude with a system prompt and user message, returning the raw text response.
- * For structured output, the caller should parse the JSON from the response.
+ * Call an AI model with a system prompt and user message, returning the raw text response.
+ * Dispatches to Anthropic or Gemini based on options.provider (default: "anthropic").
  */
 export async function callAgent(options: AgentCallOptions): Promise<string> {
+  if (options.provider === "gemini") {
+    return callAgentGemini(options);
+  }
+  return callAgentAnthropic(options);
+}
+
+async function callAgentAnthropic(options: AgentCallOptions): Promise<string> {
   const client = getClient();
   const { model, systemPrompt, userMessage, maxTokens = 8192, tools } = options;
 
   // Use streaming with finalMessage() to avoid timeouts on large responses
-  // Wrap with retry to handle transient overloaded_error (529)
   const response = await withRetry(async () => {
     const stream = client.messages.stream({
       model,
@@ -97,16 +118,15 @@ export async function callAgent(options: AgentCallOptions): Promise<string> {
     return stream.finalMessage();
   }, `callAgent(${model})`);
 
-  // Track token usage
   if (response.usage) {
     tokenTracker.record(
       `callAgent(${model.split("-").slice(-2).join("-")})`,
       response.usage.input_tokens,
-      response.usage.output_tokens
+      response.usage.output_tokens,
+      model
     );
   }
 
-  // Extract text from response
   const textBlock = response.content.find(
     (block): block is Anthropic.Messages.TextBlock => block.type === "text"
   );
@@ -120,17 +140,82 @@ export async function callAgent(options: AgentCallOptions): Promise<string> {
   return textBlock.text;
 }
 
+async function callAgentGemini(options: AgentCallOptions): Promise<string> {
+  const { model, systemPrompt, userMessage, maxTokens = 8192 } = options;
+  const client = getGeminiClient();
+
+  const genModel = client.getGenerativeModel({
+    model,
+    systemInstruction: systemPrompt,
+    generationConfig: { maxOutputTokens: maxTokens },
+  });
+
+  const result = await genModel.generateContent(userMessage);
+  const text = result.response.text();
+  const usage = result.response.usageMetadata;
+
+  if (usage) {
+    tokenTracker.record(
+      `callAgent(${model.split("-").slice(-2).join("-")})`,
+      usage.promptTokenCount ?? 0,
+      usage.candidatesTokenCount ?? 0,
+      model
+    );
+  }
+
+  return text;
+}
+
 /**
- * Runs an agent in an agentic loop, supporting multi-turn tool use.
+ * Runs an agent in an agentic loop with tool support.
  *
- * Suitable for agents that may use built-in tools like web_search_20250305.
- * The loop continues until Claude returns stop_reason="end_turn" or maxRounds is reached.
- *
- * For Anthropic's server-side tools (e.g. web_search_20250305), the actual
- * tool execution is handled by Anthropic's infrastructure — the client only
- * needs to return empty tool_result blocks to keep the conversation going.
+ * Anthropic: web_search_20250305 工具，需 tool_use → tool_result 多輪迴圈
+ * Gemini:    googleSearch grounding，單次呼叫自動搜尋並回傳結果
  */
 export async function callAgentAgentic(
+  options: AgentAgenticOptions
+): Promise<string> {
+  if (options.provider === "gemini") {
+    return callAgentAgenticGemini(options);
+  }
+  return callAgentAgenticAnthropic(options);
+}
+
+async function callAgentAgenticGemini(options: AgentAgenticOptions): Promise<string> {
+  const { model, systemPrompt, userMessage, maxTokens = 8192, tools = [] } = options;
+  const client = getGeminiClient();
+
+  // 若 tools 包含 web_search 工具，啟用 Google Search grounding
+  const hasSearch = tools.some(
+    (t: unknown) =>
+      (t as Record<string, unknown>)?.type === "web_search_20250305" ||
+      (t as Record<string, unknown>)?.googleSearch !== undefined
+  );
+
+  const genModel = client.getGenerativeModel({
+    model,
+    systemInstruction: systemPrompt,
+    generationConfig: { maxOutputTokens: maxTokens },
+    ...(hasSearch ? { tools: [{ googleSearchRetrieval: {} }] } : {}),
+  });
+
+  const result = await genModel.generateContent(userMessage);
+  const text = result.response.text();
+  const usage = result.response.usageMetadata;
+
+  if (usage) {
+    tokenTracker.record(
+      `callAgentAgentic(${model.split("-").slice(-2).join("-")})`,
+      usage.promptTokenCount ?? 0,
+      usage.candidatesTokenCount ?? 0,
+      model
+    );
+  }
+
+  return text;
+}
+
+async function callAgentAgenticAnthropic(
   options: AgentAgenticOptions
 ): Promise<string> {
   const client = getClient();
@@ -166,7 +251,8 @@ export async function callAgentAgentic(
       tokenTracker.record(
         `callAgentAgentic(${model.split("-").slice(-2).join("-")})`,
         response.usage.input_tokens,
-        response.usage.output_tokens
+        response.usage.output_tokens,
+        model
       );
     }
 

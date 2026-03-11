@@ -5,6 +5,7 @@
  * Orchestrator 透過這些型別追蹤整個流程的進度。
  */
 
+import type { Provider } from "../lib/client";
 import type { Moment } from "./moment";
 import type {
   AgentA1Output,
@@ -24,9 +25,30 @@ import type {
 // Pipeline 設定
 // ============================================================
 
+/**
+ * 每個 Agent 的 Provider 設定（不設定則使用預設值 "anthropic"）
+ *
+ * 範例：
+ *   { agent_a1: "gemini", agent_e: "gemini" }  ← A1/E 換 Gemini，其餘維持 Claude
+ */
+export interface ProviderConfig {
+  agent_a1?: Provider;
+  agent_a2?: Provider;
+  agent_b?: Provider;
+  agent_c?: Provider;
+  agent_d?: Provider;
+  agent_e?: Provider;
+}
+
 export interface PipelineConfig {
   /** Pipeline 的唯一執行 ID */
   run_id: string;
+
+  /**
+   * 各 Agent 使用的 AI Provider（選填，預設全部使用 "anthropic"）
+   * Gemini 需在 .env 中設定 GEMINI_API_KEY。
+   */
+  providers?: ProviderConfig;
 
   /** Agent A1 篩選設定 */
   filter: {
