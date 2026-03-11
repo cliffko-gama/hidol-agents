@@ -11,8 +11,8 @@
  * 定價（USD per 1M tokens，2025 年）：
  *   claude-haiku-4-5    : Input $0.80 / Output $4.00
  *   claude-sonnet-4-5/6 : Input $3.00 / Output $15.00
- *   gemini-2.0-flash    : Input $0.10 / Output $0.40
- *   gemini-2.5-pro      : Input $1.25 / Output $10.00
+ *   gemini-3.1-flash-preview : Input $0.10 / Output $0.40  (estimated)
+ *   gemini-3.1-pro-preview   : Input $1.25 / Output $10.00 (estimated)
  */
 
 export interface TokenRecord {
@@ -28,8 +28,8 @@ const MODEL_PRICING: Record<string, { input: number; output: number }> = {
   "claude-haiku-4-5":   { input: 0.80,  output: 4.00  },
   "claude-sonnet-4-5":  { input: 3.00,  output: 15.00 },
   "claude-sonnet-4-6":  { input: 3.00,  output: 15.00 },
-  "gemini-2.0-flash":   { input: 0.10,  output: 0.40  },
-  "gemini-2.5-pro":     { input: 1.25,  output: 10.00 },
+  "gemini-3.1-flash-preview": { input: 0.10,  output: 0.40  },
+  "gemini-3.1-pro-preview":   { input: 1.25,  output: 10.00 },
 };
 
 const DEFAULT_PRICING = { input: 3.00, output: 15.00 };
