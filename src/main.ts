@@ -16,8 +16,19 @@ import path from "path";
 async function main() {
   const runId = `run-${Date.now()}`;
 
+  // 讀取 provider 設定：可透過 AGENT_PROVIDER 環境變數指定（"gemini" 或 "anthropic"）
+  const providerOverride = (process.env.AGENT_PROVIDER ?? "anthropic") as "anthropic" | "gemini";
+  const providerConfig = providerOverride === "gemini"
+    ? { agent_a1: "gemini", agent_a2: "gemini", agent_b: "gemini", agent_c: "gemini", agent_d: "gemini", agent_e: "gemini" } as const
+    : undefined;
+
+  if (providerOverride === "gemini") {
+    console.log("🤖 Provider: Gemini (所有 Agent 使用 Gemini)\n");
+  }
+
   const config: PipelineConfig = {
     run_id: runId,
+    providers: providerConfig,
 
     filter: {
       min_text_length: 10,

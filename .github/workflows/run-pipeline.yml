@@ -21,6 +21,14 @@ on:
         options:
           - mock       # 使用 src/fixtures/mock-moments.ts 的測試資料
           - production # 使用上傳的 moments JSON 檔案
+      provider:
+        description: 'AI Provider'
+        required: true
+        default: 'anthropic'
+        type: choice
+        options:
+          - anthropic
+          - gemini
 
 jobs:
   run-pipeline:
@@ -32,6 +40,7 @@ jobs:
     env:
       # schedule 觸發時 inputs 為空，預設使用 mock；手動觸發時沿用選擇的值
       DATA_MODE: ${{ github.event.inputs.data_mode || 'mock' }}
+      AGENT_PROVIDER: ${{ github.event.inputs.provider || 'anthropic' }}
 
     steps:
       # ── 1. Checkout ──────────────────────────
@@ -55,6 +64,10 @@ jobs:
       - name: Create .env file
         run: |
           echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" > .env
+          echo "AGENT_PROVIDER=${{ env.AGENT_PROVIDER }}" >> .env
+          if [ -n "${{ secrets.GEMINI_API_KEY }}" ]; then
+            echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+          fi
           if [ -n "${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}" ]; then
             echo "GOOGLE_CHAT_WEBHOOK_URL=${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}" >> .env
           fi
