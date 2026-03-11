@@ -104,8 +104,14 @@ export async function runPipeline(
   console.log("\n========================================");
   console.log("  hidol Feature Story Pipeline 啟動");
   console.log("========================================\n");
+  // Provider 設定：各 agent 可獨立指定 provider，預設 anthropic
+  const providers = config.providers ?? {};
+
   console.log(`Run ID: ${config.run_id}`);
   console.log(`輸入 Moment 數: ${moments.length}`);
+  if (providers && Object.keys(providers).length > 0) {
+    console.log(`Provider 設定: ${JSON.stringify(providers)}`);
+  }
   if (lessonsFile && lessonsFile.lessons.length > 0) {
     console.log(`歷史經驗: ${lessonsFile.lessons.length} 條 (累計 ${lessonsFile.total_runs} 次 run)`);
   }
@@ -121,7 +127,7 @@ export async function runPipeline(
     a1Result = await runAgentA1({
       moments,
       filter_config: config.filter,
-    });
+    }, providers.agent_a1 ?? "anthropic");
   } catch (err) {
     const error: PipelineError = {
       stage: "filtering",
@@ -153,7 +159,7 @@ export async function runPipeline(
       filtered_moments: a1Result.filtered_moments,
       existing_topic_titles: config.clustering.existing_topic_titles,
       max_topics: config.clustering.max_topics,
-    });
+    }, providers.agent_a2 ?? "anthropic");
   } catch (err) {
     const error: PipelineError = {
       stage: "clustering",
@@ -245,7 +251,7 @@ export async function runPipeline(
             max_search_rounds: config.research.max_search_rounds,
             languages: config.research.languages,
           },
-        });
+        }, providers.agent_b ?? "anthropic");
 
         // Agent B 成功 → 存入 checkpoint，下次 re-run 可跳過
         if (checkpoint && outputDir) {
@@ -302,7 +308,7 @@ export async function runPipeline(
           revision_feedback: lastReviewFeedback,
           attempt_number: attempt,
           lessons_context: lessonsPromptSection,
-        });
+        }, providers.agent_c ?? "anthropic");
       } catch (err) {
         console.error(`[ERROR] Agent C 撰寫失敗 (attempt ${attempt})`);
         errors.push({
@@ -341,7 +347,7 @@ export async function runPipeline(
           research: bResult,
           editorial_guidelines: config.quality.editorial_guidelines,
           lessons_context: lessonsPromptSection,
-        });
+        }, providers.agent_d ?? "anthropic");
       } catch (err) {
         console.error(`[ERROR] Agent D 審核失敗，直接使用當前版本`);
         errors.push({
@@ -423,7 +429,7 @@ export async function runPipeline(
           ...(config.publish.existing_stories ?? []),
           ...publishedStories,
         ],
-      });
+      }, providers.agent_e ?? "anthropic");
 
       publishedStories.push(eResult.story_meta);
 

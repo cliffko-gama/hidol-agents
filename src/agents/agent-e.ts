@@ -5,9 +5,9 @@
 import type { AgentEInput, AgentEOutput } from "../types/agents.js";
 import { AGENT_E_SYSTEM_PROMPT } from "../prompts/agent-e.js";
 import { callAgent, extractJSON } from "../lib/call-agent.js";
-import { FAST_MODEL } from "../lib/client.js";
+import { PROVIDER_FAST_MODEL, type Provider } from "../lib/client.js";
 
-export async function runAgentE(input: AgentEInput): Promise<AgentEOutput> {
+export async function runAgentE(input: AgentEInput, provider: Provider = "anthropic"): Promise<AgentEOutput> {
   console.log(`[Agent E] 開始生成網站資料...`);
 
   const userMessage = `
@@ -39,10 +39,11 @@ ${new Date().toISOString()}
 `;
 
   const response = await callAgent({
-    model: FAST_MODEL,
+    model: PROVIDER_FAST_MODEL[provider],
     systemPrompt: AGENT_E_SYSTEM_PROMPT,
     userMessage,
     maxTokens: 16000,
+    provider,
   });
 
   const result = extractJSON<AgentEOutput>(response);

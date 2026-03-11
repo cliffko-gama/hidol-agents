@@ -12,9 +12,9 @@ import type {
 import type { Moment } from "../types/moment.js";
 import { AGENT_D_SYSTEM_PROMPT } from "../prompts/agent-d.js";
 import { callAgent, extractJSON } from "../lib/call-agent.js";
-import { QUALITY_MODEL } from "../lib/client.js";
+import { PROVIDER_QUALITY_MODEL, type Provider } from "../lib/client.js";
 
-export async function runAgentD(input: AgentDInput): Promise<AgentDOutput> {
+export async function runAgentD(input: AgentDInput, provider: Provider = "anthropic"): Promise<AgentDOutput> {
   console.log(
     `[Agent D] 開始審核「${input.feature_story.title}」...`
   );
@@ -88,10 +88,11 @@ ${input.lessons_context ? input.lessons_context + "\n---\n" : ""}
         ? `\n\n⚠️ 注意：你上一次的輸出無法解析為 JSON。請確保輸出「純 JSON 物件」，不要包含 Markdown 程式碼區塊（\`\`\`）、前置說明文字或尾端評論。`
         : "";
       const response = await callAgent({
-        model: QUALITY_MODEL,
+        model: PROVIDER_QUALITY_MODEL[provider],
         systemPrompt: AGENT_D_SYSTEM_PROMPT,
         userMessage: userMessage + retryHint,
         maxTokens: 12000,
+        provider,
       });
 
       result = extractJSON<AgentDOutput>(response);
