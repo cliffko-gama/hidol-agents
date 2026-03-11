@@ -185,34 +185,49 @@ async function callAgentAgenticGemini(options: AgentAgenticOptions): Promise<str
   const { model, systemPrompt, userMessage, maxTokens = 8192, tools = [] } = options;
   const client = getGeminiClient();
 
-  // 若 tools 包含 web_search 工具，啟用 Google Search grounding
+  // 若 tools 包含 web_search 工具，嘗試啟用 Google Search grounding
   const hasSearch = tools.some(
     (t: unknown) =>
       (t as Record<string, unknown>)?.type === "web_search_20250305" ||
       (t as Record<string, unknown>)?.googleSearch !== undefined
   );
 
-  const genModel = client.getGenerativeModel({
-    model,
-    systemInstruction: systemPrompt,
-    generationConfig: { maxOutputTokens: maxTokens },
-    ...(hasSearch ? { tools: [{ googleSearchRetrieval: {} }] } : {}),
-  });
+  const doCall = async (withSearch: boolean): Promise<string> => {
+    const genModel = client.getGenerativeModel({
+      model,
+      systemInstruction: systemPrompt,
+      generationConfig: { maxOutputTokens: maxTokens },
+      ...(withSearch ? { tools: [{ googleSearchRetrieval: {} }] } : {}),
+    });
 
-  const result = await genModel.generateContent(userMessage);
-  const text = result.response.text();
-  const usage = result.response.usageMetadata;
+    const result = await genModel.generateContent(userMessage);
+    const text = result.response.text();
+    const usage = result.response.usageMetadata;
 
-  if (usage) {
-    tokenTracker.record(
-      `callAgentAgentic(${model.split("-").slice(-2).join("-")})`,
-      usage.promptTokenCount ?? 0,
-      usage.candidatesTokenCount ?? 0,
-      model
-    );
+    if (usage) {
+      tokenTracker.record(
+        `callAgentAgentic(${model.split("-").slice(-2).join("-")})`,
+        usage.promptTokenCount ?? 0,
+        usage.candidatesTokenCount ?? 0,
+        model
+      );
+    }
+    return text;
+  };
+
+  if (hasSearch) {
+    try {
+      return await doCall(true);
+    } catch (err) {
+      // googleSearchRetrieval 可能在此方案/模型不支援，降級為無搜尋工具呼叫
+      console.warn(
+        `[Gemini] googleSearchRetrieval 失敗（${err instanceof Error ? err.message.slice(0, 80) : String(err)}），降級為純知識呼叫`
+      );
+      return await doCall(false);
+    }
   }
 
-  return text;
+  return doCall(false);
 }
 
 async function callAgentAgenticAnthropic(
