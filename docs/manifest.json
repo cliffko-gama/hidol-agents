@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-12T05:35:27.011Z",
+  "generated_at": "2026-03-12T05:54:09.898Z",
   "story_count": 17,
   "stories": [
     {
@@ -21,32 +21,16 @@
       "tags": []
     },
     {
-      "story_id": "haikyu-merchandise-guide-2026-h1",
-      "title": "排球少年收藏熱：2026 上半年粉絲必搶周邊完全攻略",
-      "published_at": "2026-03-02T11:21:15.000Z",
-      "tags": [
-        "排球少年",
-        "周邊收藏",
-        "日清聯名",
-        "TCG卡牌",
-        "吉祥物",
-        "粉絲經濟"
-      ]
-    },
-    {
       "story_id": "chiikawa-taiwan-2026-h1",
       "title": "吉伊卡哇攻台計畫：從快閃到常設，粉絲終於等到了",
       "published_at": "2026-03-02T11:21:15.000Z",
-      "tags": [
-        "吉伊卡哇",
-        "CHIIKAWA",
-        "中山常設店",
-        "85度C",
-        "華山快閃",
-        "三麗鷗聯名",
-        "盲盒",
-        "小八貓"
-      ]
+      "tags": []
+    },
+    {
+      "story_id": "haikyu-merchandise-guide-2026-h1",
+      "title": "排球少年收藏熱：2026 上半年粉絲必搶周邊完全攻略",
+      "published_at": "2026-03-02T11:21:15.000Z",
+      "tags": []
     },
     {
       "story_id": "fenix-distance-moments",
@@ -58,14 +42,7 @@
       "story_id": "fenix-senses-album-param",
       "title": "《參》是什麼味道？當音樂遇上五感",
       "published_at": "2026-03-02T08:59:10.386Z",
-      "tags": [
-        "FEniX",
-        "參專輯",
-        "五感詮釋",
-        "聯覺現象",
-        "Z世代音樂討論",
-        "星空音樂日"
-      ]
+      "tags": []
     },
     {
       "story_id": "fenix-moments-of-being-seen",
@@ -86,13 +63,7 @@
       "story_id": "fenix-moments-being-seen",
       "title": "被看見的那一刻：FEniX 粉絲最捨不得刪的照片",
       "published_at": "2026-03-02T08:26:02.219Z",
-      "tags": [
-        "FEniX",
-        "粉絲見面會",
-        "追星日常",
-        "被看見",
-        "雙向陪伴"
-      ]
+      "tags": []
     },
     {
       "story_id": "fenix-2025-milestones",
@@ -104,26 +75,13 @@
       "story_id": "從高雄到大佳-三萬人一起哭的那個晚上",
       "title": "從高雄到大佳：三萬人一起哭的那個晚上",
       "published_at": "2026-02-25T09:31:21.000Z",
-      "tags": [
-        "音樂祭",
-        "現場體驗",
-        "Z世代",
-        "大佳河濱公園",
-        "集體記憶"
-      ]
+      "tags": []
     },
     {
       "story_id": "鏡頭之外-那些你沒看到的幕後瞬間",
       "title": "鏡頭之外：那些你沒看到的幕後瞬間",
       "published_at": "2026-02-25T09:31:21.000Z",
-      "tags": [
-        "幕後花絮",
-        "練習室",
-        "MV拍攝",
-        "粉絲文化",
-        "透明度",
-        "真實感"
-      ]
+      "tags": []
     },
     {
       "story_id": "seen-in-crowd",
@@ -142,51 +100,25 @@
       "story_id": "summer-music-festival-2025",
       "title": "三萬人一起哭的那個晚上：音樂祭為什麼能拯救一個人？",
       "published_at": "2026-02-24T11:54:41.467Z",
-      "tags": [
-        "夏日音樂祭",
-        "現場音樂",
-        "Z世代",
-        "集體共鳴",
-        "情感救贖",
-        "大佳河濱公園"
-      ]
+      "tags": []
     },
     {
       "story_id": "through-the-glass-window",
       "title": "透過那片玻璃窗：當練習室不再是秘密",
       "published_at": "2026-02-24T10:21:49.357Z",
-      "tags": [
-        "幕後",
-        "透明化",
-        "偶像文化",
-        "真實感",
-        "hidol"
-      ]
+      "tags": []
     },
     {
       "story_id": "the-night-thirty-thousand-cried",
       "title": "三萬人一起哭的那個晚上",
       "published_at": "2026-02-24T10:18:08.010Z",
-      "tags": [
-        "夏日音樂祭",
-        "現場體驗",
-        "集體共鳴",
-        "音樂的力量",
-        "Z世代文化"
-      ]
+      "tags": []
     },
     {
       "story_id": "music-festival-prep-guide",
       "title": "音樂祭備戰指南：從穿搭到手幅的儀式感",
       "published_at": "2026-02-24T09:43:36.184Z",
-      "tags": [
-        "音樂祭",
-        "粉絲文化",
-        "儀式感",
-        "Z世代",
-        "DIY手作",
-        "應援文化"
-      ]
+      "tags": []
     }
   ]
 }
