@@ -83,6 +83,10 @@ export interface AgentCallOptions {
   /** Gemini 專用：是否啟用 JSON output mode（預設 true）。
    *  複雜巢狀 JSON（如 Agent E 的 JSON-in-JSON）應設為 false 避免截斷。 */
   jsonMode?: boolean;
+  /** Gemini 專用：thinking token 預算（預設 undefined = 模型自動決定）。
+   *  Gemini 2.5 的 thinking tokens 會計入 maxOutputTokens，
+   *  若任務不需要深度思考（如格式轉換），設為 0 可避免輸出被截斷。 */
+  thinkingBudget?: number;
 }
 
 export interface AgentAgenticOptions {
@@ -148,17 +152,21 @@ async function callAgentAnthropic(options: AgentCallOptions): Promise<string> {
 }
 
 async function callAgentGemini(options: AgentCallOptions): Promise<string> {
-  const { model, systemPrompt, userMessage, maxTokens = 8192, jsonMode = true } = options;
+  const { model, systemPrompt, userMessage, maxTokens = 8192, jsonMode = true, thinkingBudget } = options;
   const client = getGeminiClient();
 
   const genModel = client.getGenerativeModel({
     model,
     systemInstruction: systemPrompt,
     generationConfig: {
+      // Gemini 2.5 的 thinking tokens 計入 maxOutputTokens，
+      // 需要設夠大（或關閉 thinking）才不會截斷實際輸出
       maxOutputTokens: maxTokens,
       // JSON mode：簡單結構用 JSON 輸出；複雜巢狀結構（如 Agent E）需關閉避免截斷
       ...(jsonMode ? { responseMimeType: "application/json" } : {}),
-    },
+      // thinking 預算控制：設為 0 可關閉思考，避免佔用 output token 預算
+      ...(thinkingBudget !== undefined ? { thinkingConfig: { thinkingBudget } } : {}),
+    } as Record<string, unknown>,
   });
 
   const result = await withRetry(

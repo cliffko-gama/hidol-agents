@@ -53,8 +53,10 @@ ${JSON.stringify(momentSummaries, null, 2)}
     model: PROVIDER_FAST_MODEL[provider],
     systemPrompt: AGENT_A1_SYSTEM_PROMPT,
     userMessage,
-    maxTokens: 8000,
+    maxTokens: 16384,
     provider,
+    // 篩選是簡單判斷任務，不需要深度思考；避免 Gemini thinking 佔用 output 預算
+    thinkingBudget: 0,
   });
 
   // 解析 LLM 輸出（只含 ID）

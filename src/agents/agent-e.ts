@@ -42,11 +42,14 @@ ${new Date().toISOString()}
     model: PROVIDER_FAST_MODEL[provider],
     systemPrompt: AGENT_E_SYSTEM_PROMPT,
     userMessage,
-    maxTokens: 16000,
+    maxTokens: 65536,
     provider,
     // Agent E 產出巢狀 JSON（generated_files[].content 是 JSON 字串），
     // Gemini JSON mode 會截斷這種結構，改用普通文字讓 extractJSON 解析
     jsonMode: false,
+    // Agent E 是格式轉換任務，不需要深度思考；
+    // Gemini 2.5 的 thinking tokens 會計入 maxOutputTokens，關閉思考避免輸出被截斷
+    thinkingBudget: 0,
   });
 
   const result = extractJSON<AgentEOutput>(response);
