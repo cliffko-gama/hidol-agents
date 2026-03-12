@@ -95,6 +95,31 @@ jobs:
         env:
           NODE_NO_WARNINGS: 1
 
+      # ── 5c. Debug: 列出 pipeline 產出 ───────────
+      - name: Debug pipeline output
+        if: always()
+        run: |
+          echo "=== output/ 目錄結構 ==="
+          find output -type f 2>/dev/null | sort || echo "(output/ 不存在)"
+          echo ""
+          echo "=== Pipeline 執行結果摘要 ==="
+          # 印出最新的 run result JSON（status + errors）
+          LATEST_RUN=$(ls -t output/run-*.json 2>/dev/null | head -1)
+          if [ -n "$LATEST_RUN" ]; then
+            echo "Result file: $LATEST_RUN"
+            node -e "
+              const r = require('./' + process.argv[1]);
+              console.log('Status:', r.status);
+              console.log('Stories published:', r.stats?.stories_published ?? 0);
+              console.log('Errors:', JSON.stringify(r.errors, null, 2));
+            " "$LATEST_RUN"
+          else
+            echo "⚠️ 找不到 run result JSON"
+          fi
+          echo ""
+          echo "=== Agent E 產出 ==="
+          find output -name "06-topic-*-agent-e-publish.json" 2>/dev/null || echo "⚠️ 沒有 Agent E 產出檔案"
+
       # ── 6. 產生靜態網站 ────────────────────────
       - name: Generate docs site
         run: npm run generate-docs
