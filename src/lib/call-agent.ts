@@ -166,9 +166,13 @@ async function callAgentGemini(options: AgentCallOptions): Promise<string> {
     `callAgent(${model})`
   );
 
-  // 安全過濾器檢查：若回傳被擋住，提供清楚的錯誤訊息
+  // 回應診斷：記錄 finishReason 和回應長度，方便 debug
   const candidate = result.response.candidates?.[0];
-  if (!candidate || candidate.finishReason === "SAFETY") {
+  const finishReason = candidate?.finishReason ?? "UNKNOWN";
+  const usage = result.response.usageMetadata;
+
+  // 安全過濾器檢查
+  if (!candidate || finishReason === "SAFETY") {
     const ratings = candidate?.safetyRatings?.map(
       (r) => `${r.category}: ${r.probability}`
     ).join(", ") ?? "unknown";
@@ -178,7 +182,18 @@ async function callAgentGemini(options: AgentCallOptions): Promise<string> {
   }
 
   const text = result.response.text();
-  const usage = result.response.usageMetadata;
+
+  console.log(
+    `[Gemini] callAgent(${model}) → finishReason=${finishReason}, ` +
+    `outputChars=${text.length}, outputTokens=${usage?.candidatesTokenCount ?? "?"}/${maxTokens}`
+  );
+
+  // 若 output 異常短（< 2000 chars）且有 MAX_TOKENS，提示 truncation
+  if (finishReason === "MAX_TOKENS") {
+    console.warn(
+      `[Gemini] ⚠️ 回應被 MAX_TOKENS 截斷（${text.length} chars, ${usage?.candidatesTokenCount ?? "?"} tokens）`
+    );
+  }
 
   if (usage) {
     tokenTracker.record(
