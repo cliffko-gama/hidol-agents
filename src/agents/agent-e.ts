@@ -44,6 +44,9 @@ ${new Date().toISOString()}
     userMessage,
     maxTokens: 16000,
     provider,
+    // Agent E 產出巢狀 JSON（generated_files[].content 是 JSON 字串），
+    // Gemini JSON mode 會截斷這種結構，改用普通文字讓 extractJSON 解析
+    jsonMode: false,
   });
 
   const result = extractJSON<AgentEOutput>(response);

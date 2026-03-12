@@ -80,6 +80,9 @@ export interface AgentCallOptions {
   tools?: Anthropic.Messages.Tool[];
   /** 使用的 provider，預設為 "anthropic" */
   provider?: Provider;
+  /** Gemini 專用：是否啟用 JSON output mode（預設 true）。
+   *  複雜巢狀 JSON（如 Agent E 的 JSON-in-JSON）應設為 false 避免截斷。 */
+  jsonMode?: boolean;
 }
 
 export interface AgentAgenticOptions {
@@ -145,7 +148,7 @@ async function callAgentAnthropic(options: AgentCallOptions): Promise<string> {
 }
 
 async function callAgentGemini(options: AgentCallOptions): Promise<string> {
-  const { model, systemPrompt, userMessage, maxTokens = 8192 } = options;
+  const { model, systemPrompt, userMessage, maxTokens = 8192, jsonMode = true } = options;
   const client = getGeminiClient();
 
   const genModel = client.getGenerativeModel({
@@ -153,8 +156,8 @@ async function callAgentGemini(options: AgentCallOptions): Promise<string> {
     systemInstruction: systemPrompt,
     generationConfig: {
       maxOutputTokens: maxTokens,
-      // 強制 JSON 輸出模式：讓 Gemini 直接回傳可解析的 JSON
-      responseMimeType: "application/json",
+      // JSON mode：簡單結構用 JSON 輸出；複雜巢狀結構（如 Agent E）需關閉避免截斷
+      ...(jsonMode ? { responseMimeType: "application/json" } : {}),
     },
   });
 
