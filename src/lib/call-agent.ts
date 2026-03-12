@@ -42,13 +42,17 @@ async function withRetry<T>(
         (err instanceof Error &&
           (err.message.includes("overloaded") ||
            err.message.includes("529") ||
-           errObj.status === 529)) ||
+           err.message.includes("503") ||
+           err.message.includes("UNAVAILABLE") ||
+           errObj.status === 529 ||
+           errObj.status === 503)) ||
         errObj.error?.type === "overloaded_error";
 
       const isRateLimited =
         err instanceof Error &&
         (err.message.includes("rate_limit") ||
          err.message.includes("429") ||
+         err.message.includes("RESOURCE_EXHAUSTED") ||
          errObj.status === 429);
 
       if ((isOverloaded || isRateLimited) && attempt < maxRetries) {
@@ -147,10 +151,29 @@ async function callAgentGemini(options: AgentCallOptions): Promise<string> {
   const genModel = client.getGenerativeModel({
     model,
     systemInstruction: systemPrompt,
-    generationConfig: { maxOutputTokens: maxTokens },
+    generationConfig: {
+      maxOutputTokens: maxTokens,
+      // 強制 JSON 輸出模式：讓 Gemini 直接回傳可解析的 JSON
+      responseMimeType: "application/json",
+    },
   });
 
-  const result = await genModel.generateContent(userMessage);
+  const result = await withRetry(
+    () => genModel.generateContent(userMessage),
+    `callAgent(${model})`
+  );
+
+  // 安全過濾器檢查：若回傳被擋住，提供清楚的錯誤訊息
+  const candidate = result.response.candidates?.[0];
+  if (!candidate || candidate.finishReason === "SAFETY") {
+    const ratings = candidate?.safetyRatings?.map(
+      (r) => `${r.category}: ${r.probability}`
+    ).join(", ") ?? "unknown";
+    throw new Error(
+      `[Gemini] 回應被安全過濾器阻擋。Safety ratings: ${ratings}`
+    );
+  }
+
   const text = result.response.text();
   const usage = result.response.usageMetadata;
 
@@ -196,11 +219,30 @@ async function callAgentAgenticGemini(options: AgentAgenticOptions): Promise<str
     const genModel = client.getGenerativeModel({
       model,
       systemInstruction: systemPrompt,
-      generationConfig: { maxOutputTokens: maxTokens },
+      generationConfig: {
+        maxOutputTokens: maxTokens,
+        // 搜尋模式不能用 JSON mode（search grounding 與 JSON 輸出不相容）
+        ...(withSearch ? {} : { responseMimeType: "application/json" }),
+      },
       ...(withSearch ? { tools: [{ googleSearchRetrieval: {} }] } : {}),
     });
 
-    const result = await genModel.generateContent(userMessage);
+    const result = await withRetry(
+      () => genModel.generateContent(userMessage),
+      `callAgentAgentic(${model})`
+    );
+
+    // 安全過濾器檢查
+    const candidate = result.response.candidates?.[0];
+    if (!candidate || candidate.finishReason === "SAFETY") {
+      const ratings = candidate?.safetyRatings?.map(
+        (r) => `${r.category}: ${r.probability}`
+      ).join(", ") ?? "unknown";
+      throw new Error(
+        `[Gemini] 回應被安全過濾器阻擋。Safety ratings: ${ratings}`
+      );
+    }
+
     const text = result.response.text();
     const usage = result.response.usageMetadata;
 
