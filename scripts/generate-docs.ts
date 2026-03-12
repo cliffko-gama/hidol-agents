@@ -115,6 +115,46 @@ interface ParsedStory {
 function collectStories(): ParsedStory[] {
   const storiesMap = new Map<string, ParsedStory>(); // story_id → latest
 
+  // ── Step 0：先掃描 manifest.json 與 docs/stories/ 建立歷史 published_at 對照表 ──
+  // 用來保留已存在故事的原始發佈時間，避免重新生成時被覆蓋成新時間
+  const historicalPublishedAt = new Map<string, string>();
+
+  // 來源 1：manifest.json（所有故事都有 published_at，作為 fallback）
+  const manifestPath = path.join(DOCS_DIR, "manifest.json");
+  if (fs.existsSync(manifestPath)) {
+    try {
+      const manifestRaw = fs.readFileSync(manifestPath, "utf-8");
+      const manifest = JSON.parse(manifestRaw) as { stories: Array<{ story_id: string; published_at: string }> };
+      for (const s of manifest.stories ?? []) {
+        if (s.story_id && s.published_at) {
+          historicalPublishedAt.set(s.story_id, s.published_at);
+        }
+      }
+    } catch {
+      // manifest 不可用時忽略
+    }
+  }
+
+  // 來源 2：docs/stories/*.json 的 meta.published_at（更精確，優先覆蓋 manifest 版本）
+  if (fs.existsSync(DOCS_STORIES_DIR)) {
+    const storyFiles = fs
+      .readdirSync(DOCS_STORIES_DIR)
+      .filter((f) => f.endsWith(".json") && f !== "stories.json");
+
+    for (const file of storyFiles) {
+      try {
+        const storyId = file.replace(/\.json$/, "");
+        const raw = fs.readFileSync(path.join(DOCS_STORIES_DIR, file), "utf-8");
+        const storyContent = JSON.parse(raw) as StoryJSON;
+        if (storyContent.meta?.published_at) {
+          historicalPublishedAt.set(storyId, storyContent.meta.published_at);
+        }
+      } catch {
+        // 忽略解析錯誤，後續 Step 2 會再處理
+      }
+    }
+  }
+
   // ── Step 1：從 output/ 收集當前 run 的故事 ──
   if (fs.existsSync(OUTPUT_DIR)) {
     // 找所有 run-* 子目錄
@@ -149,8 +189,18 @@ function collectStories(): ParsedStory[] {
           if (!storyFile) continue;
 
           const storyContent = JSON.parse(storyFile.content) as StoryJSON;
+          const storyId = eOutput.story_meta.story_id;
 
-          storiesMap.set(eOutput.story_meta.story_id, {
+          // 如果這篇故事已存在於 docs/stories/，保留原始 published_at
+          // 只有真正新增的故事才使用 Agent E 給的最新時間戳
+          const originalPubAt = historicalPublishedAt.get(storyId);
+          if (originalPubAt) {
+            eOutput.story_meta.published_at = originalPubAt;
+            storyContent.meta.published_at = originalPubAt;
+            console.log(`   ℹ️  ${storyId}: 保留原始發佈時間 ${originalPubAt}`);
+          }
+
+          storiesMap.set(storyId, {
             meta: eOutput.story_meta,
             content: storyContent,
             runId: runDir,
@@ -235,6 +285,17 @@ function collectStories(): ParsedStory[] {
 function writeStoryJsons(stories: ParsedStory[]): void {
   fs.mkdirSync(DOCS_STORIES_DIR, { recursive: true });
   for (const story of stories) {
+    // 確保 story JSON 的 meta.published_at 一定存在
+    // Agent E 可能不會產生此欄位，所以從 story.meta 回填
+    if (!story.content.meta.published_at && story.meta.published_at) {
+      story.content.meta.published_at = story.meta.published_at;
+    }
+    // 同步 reading_time_minutes（部分舊故事用 estimated_read_time）
+    const anyMeta = story.content.meta as Record<string, unknown>;
+    if (!story.content.meta.reading_time_minutes && anyMeta.estimated_read_time) {
+      story.content.meta.reading_time_minutes = anyMeta.estimated_read_time as number;
+    }
+
     const filePath = path.join(DOCS_STORIES_DIR, `${story.meta.story_id}.json`);
     fs.writeFileSync(filePath, JSON.stringify(story.content, null, 2), "utf-8");
   }
